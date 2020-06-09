@@ -1,0 +1,175 @@
+---
+title: "Dalex_R_Practice"
+author: "m.o"
+date: "6/9/2020"
+output: html_document
+---
+
+# 5 Data sets and models
+
+## 5.1 Sinking of the RMS Titanic
+
+#### ライブラリインポート
+
+```{r}
+library('DALEX')
+```
+
+#### Titanic Data確認  
+
+```{r}
+head(titanic, 2)
+```
+
+- DALEXには前処理済みデータセットが入っている。
+
+### 5.1.1 Data exploration
+
+#### データ構造確認
+
+```{r}
+summary(titanic)
+```
+
+#### 欠損値補完
+
+```{r}
+# age
+titanic$age[is.na(titanic$age)] = 30 # NAに30を入れる
+# country
+titanic$country <- as.character(titanic$country) # データ型を文字列に
+titanic$country[is.na(titanic$country)] = 'X' # NAに'X'を代入
+titanic$country <- factor(titanic$country) # country列のベクトル化
+# fare：クラスの平均値で補完
+titanic$fare[is.na(titanic$fare) & titanic$class == '1st'] = 89
+titanic$fare[is.na(titanic$fare) & titanic$class == '2nd'] = 22
+titanic$fare[is.na(titanic$fare) & titanic$class == '3rd'] = 13
+# sibsp、parch：0で補完
+titanic$sibsp[is.na(titanic$sibsp)] = 0
+titanic$parch[is.na(titanic$parch)] = 0
+```
+
+#### 欠損値補完がされたかを確認
+
+```{r}
+summary(titanic)
+```
+
+### 5.1.2 Logistic regression model
+
+#### ロジスティクス回帰
+
+- survivedがyesを予測するモデルを作成
+
+```{r}
+library('rms')
+set.seed(1313)
+titanic_lmr_v6 <- lrm(survived == 'yes' ~ gender + rcs(age) + class + sibsp + parch + fare + embarked, titanic)
+titanic_lmr_v6
+```
+
+### 5.1.3 Random forest model
+
+```{r}
+library("randomForest")
+set.seed(1313)
+```
+
+
+#### ランダムフォレスト（変数７つ）
+
+```{r}
+titanic_rf_v6 <- randomForest(survived ~ class + gender + age + sibsp + 
+         parch + fare + embarked, data = titanic)
+titanic_rf_v6
+```
+
+#### ランダムフォレスト（変数３つ）
+
+```{r}
+titanic_rf_v3 <- randomForest(survived ~ class + gender + age, data = titanic)
+titanic_rf_v3
+```
+
+#### 5.1.4 Gradient boosting model
+
+```{r}
+library('gbm')
+set.seed(1313)
+titanic_gbm_v6 <- gbm()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
