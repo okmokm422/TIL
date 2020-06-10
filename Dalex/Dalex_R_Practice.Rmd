@@ -1,38 +1,35 @@
 ---
 title: "Dalex_R_Practice"
-author: "m.o"
-date: "6/9/2020"
-output: html_document
+author: "m.oka"
+date: "6/11/2020"
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 # 5 Data sets and models
 
 ## 5.1 Sinking of the RMS Titanic
 
-#### ライブラリインポート
-
+- ライブラリインポート
 ```{r}
 library('DALEX')
 ```
 
-#### Titanic Data確認  
-
+- Titanic Data確認  
+- DALEXにはtitanicデータセットが入っている。
 ```{r}
 head(titanic, 2)
 ```
 
-- DALEXには前処理済みデータセットが入っている。
-
 ### 5.1.1 Data exploration
 
-#### データ構造確認
-
+- データ構造確認
 ```{r}
 summary(titanic)
 ```
 
-#### 欠損値補完
-
+- 欠損値補完
 ```{r}
 # age
 titanic$age[is.na(titanic$age)] = 30 # NAに30を入れる
@@ -49,18 +46,14 @@ titanic$sibsp[is.na(titanic$sibsp)] = 0
 titanic$parch[is.na(titanic$parch)] = 0
 ```
 
-#### 欠損値補完がされたかを確認
-
+- 欠損値補完がされたかを確認
 ```{r}
 summary(titanic)
 ```
 
 ### 5.1.2 Logistic regression model
 
-#### ロジスティクス回帰
-
 - survivedがyesを予測するモデルを作成
-
 ```{r}
 library('rms')
 set.seed(1313)
@@ -75,101 +68,228 @@ library("randomForest")
 set.seed(1313)
 ```
 
-
-#### ランダムフォレスト（変数７つ）
-
+- ランダムフォレスト（説明変数７つ）モデル作成
 ```{r}
 titanic_rf_v6 <- randomForest(survived ~ class + gender + age + sibsp + 
          parch + fare + embarked, data = titanic)
 titanic_rf_v6
 ```
 
-#### ランダムフォレスト（変数３つ）
-
+- ランダムフォレスト（説明変数３つ）モデル作成
 ```{r}
 titanic_rf_v3 <- randomForest(survived ~ class + gender + age, data = titanic)
 titanic_rf_v3
 ```
 
-#### 5.1.4 Gradient boosting model
+### 今後の説明はすべてtitanic_rf_v6のため、5.1.4, 5.1.5は省略
+
+### 5.1.6 Model predictions
+
+- johny_dのデータを作成
+```{r}
+johny_d <- data.frame(
+            class = factor("1st", levels = c("1st", "2nd", "3rd", "deck crew",
+                        "engineering crew", "restaurant staff", "victualling crew")),
+            gender = factor("male", levels = c("female", "male")),
+            age = 8,
+            sibsp = 0,
+            parch = 0,
+            fare = 72,
+            embarked = factor("Southampton", levels = c("Belfast",
+                        "Cherbourg","Queenstown","Southampton"))
+)
+```
+
+- ロジスティック回帰で予測
+```{r}
+pred_lmr <- predict(titanic_lmr_v6, johny_d, type = 'fitted')
+pred_lmr
+```
+
+- ランダムフォレスト（説明変数６つ）で作成
+```{r}
+predict(titanic_rf_v6, johny_d ,type = 'prob')
+```
+
+### 5.1.7 Model adapters
+
+- 後に使うhenryデータを作成
+```{r}
+henry <- data.frame(
+         class = factor("1st", levels = c("1st", "2nd", "3rd", "deck crew", 
+                     "engineering crew", "restaurant staff", "victualling crew")),
+         gender = factor("male", levels = c("female", "male")),
+         age = 47,
+         sibsp = 0,
+         parch = 0,
+         fare = 25,
+         embarked = factor("Cherbourg", levels = c("Belfast",
+                           "Cherbourg","Queenstown","Southampton"))
+)
+henry
+```
+
+
+# 7 Break-down Plots for Additive Attributions
+
+## 7.5 Code snippets for R
+
+- モデルの呼び出し
+```{r}
+library('randomForest')
+explain_rf_v6 <- archivist::aread('pbiecek/models/6ed54') 
+explain_rf_v6
+```
+
+- データ呼び出し
+```{r}
+library('DALEX')
+henry <- archivist::aread('pbiecek/models/a6538')
+henry
+```
+
+- 予測
+```{r}
+predict(explain_rf_v6, henry)
+```
+
+### 7.5.1 Basic use of the variable_attribution() function
+
+- DALEX::variable_attribution()でBDPlotを行う
+```{r}
+# 重要度計算
+bd_rf <- variable_attribution(explain_rf_v6, new_observation = henry, type = 'break_down')
+bd_rf
+```
+```{r}
+# plotする
+plot(bd_rf)
+```
+
+
+### 7.5.2 Advanced use of the variable_attribution() function
+
+- 順序をorderで指定
+```{r}
+bd_rf_order <- variable_attribution(explain_rf_v6, new_observation = henry, type = 'break_down', order = c('class', 'age', 'gender', 'fare', 'parch', 'sibsp', 'embarked'))
+bd_rf_order
+```
+
+- 表示する説明変数を３つに絞ってplot
+```{r}
+plot(bd_rf_order, max_features = 3)
+```
+
+
+# 8 Break-down Plots for Interactions (iBreak-down Plots)
+
+## 8.5 Code snippets for R
+
+- モデルの呼び出し
+```{r}
+library('randomForest')
+explain_rf_v6 <- archivist::aread('pbiecek/models/6ed54') 
+explain_rf_v6
+```
+
+- データ呼び出し
+```{r}
+library('DALEX')
+henry <- archivist::aread('pbiecek/models/a6538')
+henry
+```
+
+- 予測
+```{r}
+predict(explain_rf_v6, henry)
+```
+
+- DALEX::variable_attribution()でiBDPlotを行う
+```{r}
+library('DALEX')
+bdi_rf <- variable_attribution(explain_rf_v6, new_observation = henry, type = 'break_down_interactions')
+bdi_rf
+```
 
 ```{r}
-library('gbm')
-set.seed(1313)
-titanic_gbm_v6 <- gbm()
+plot(bdi_rf)
+```
+
+# 9 Shapley Additive Explanations (SHAP) and Average Variable Attributions
+
+## 9.5 Code snippets for R
+
+- モデルの呼び出し
+```{r}
+library('randomForest')
+explain_rf_v6 <- archivist::aread('pbiecek/models/6ed54') 
+explain_rf_v6
+```
+
+- データ呼び出し
+```{r}
+library('DALEX')
+henry <- archivist::aread('pbiecek/models/a6538')
+henry
+```
+
+- 予測
+```{r}
+predict(explain_rf_v6, henry)
+```
+
+- DALEX::variable_attribution()でSHAPのPlotを行う
+```{r}
+# 説明変数は、25のランダムな順番（B=25）
+shap_henry <- variable_attribution(explain_rf_v6, henry, type = 'shap', B = 25)
+shap_henry
+```
+
+```{r}
+plot(shap_henry)
 ```
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+- 箱ひげ図非表示
+```{r}
+plot(shap_henry, show_boxplots = FALSE)
 ```
 
-## R Markdown
+# 10 Local Interpretable Model-agnostic Explanations (LIME)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## 10.6 Code snippets for R
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+### 10.6.1 The lime package
 
-```{r cars}
-summary(cars)
+- 分類で使用することを明示し、randomForestでlime functionを作成
+```{r}
+library('lime')
+model_type.randomForest <- function(x, ...) 'classification'
+model_type.randomForest
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+- limeの計算に必要なobjectを作成
+- johny_dのデータを使用
+```{r}
+lime_rf <- lime(titanic[, colnames(johny_d)], titanic_rf_v6)
+lime_rf
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+- 説明オブジェクトを作成
+- n_featuresでK-LASSOを指定（？？？？）、n_permutationsで人口データの数を指定
+```{r}
+lime_expl <- lime::explain(johny_d, lime_rf, labels = 'yes', n_features = 4, n_permutations = 1000)
+lime_expl
+```
+
+- 重要な特徴量をプロット
+```{r}
+plot_features(lime_expl)
+```
+
+### 10.6.2 The localModel package
+
+
+
+
+
