@@ -1,0 +1,158 @@
+---
+title: "R_muticlass_dalex"
+author: "m.oka"
+date: "6/22/2020"
+output: html_document
+---
+
+
+
+# iris datasetの確認
+
+```{r}
+head(iris)
+```
+
+# データセットの次元を確認
+
+```{r}
+dim(iris)
+```
+
+# データセットの要約統計量
+
+```{r}
+summary(iris)
+```
+
+# ランダムフォレストでモデリング
+
+## 訓練データとテストデータに分割
+
+```{r}
+library("randomForest")
+```
+
+## 訓練データとテストデータに分割
+
+```{r}
+set.seed(1313)
+iris.rows = nrow(iris) # 150
+train.rate = 0.7 # 訓練データの比率
+train.index <- sample(iris.rows, iris.rows * train.rate)
+iris.train = iris[train.index,] # 訓練データ
+iris.test = iris[-train.index,] # テストデータ
+cat("train=", nrow(iris.train), " test=", nrow(iris.test))
+```
+
+## 訓練データの確認
+
+```{r}
+head(iris.train)
+```
+
+```{r}
+dim(iris.train)
+```
+
+## テストデータの確認
+
+```{r}
+head(iris.test)
+```
+
+```{r}
+dim(iris.test)
+```
+
+
+## 学習
+
+```{r}
+iris_rf <- randomForest(Species ~ (.) ,data=iris.train)
+iris_rf
+```
+
+## 予測
+
+```{r}
+iris_pred <- predict(iris_rf, iris.test)
+```
+
+## 予測結果の確認
+
+```{r}
+table(iris_pred, iris.test$Species) # 予測結果の検証
+sum(pred == iris.test$Species) / length(pred) # 正解率
+```
+
+# DALEX（instance levelで使ってみる）
+
+
+## libraryインポート
+
+```{r}
+library('DALEX')
+```
+
+## instance dataを作成
+
+```{r}
+data1 <- data.frame(Sepal.Length=5.0,
+                    Sepal.Width=3.5,
+                    Petal.Length=1.5,
+                    Petal.Width=0.2)
+```
+
+## 作成したinstance dataで予測
+
+```{r}
+pred_data1 <- predict(iris_rf, data1)
+pred_data1
+```
+
+## explain objectを作成
+
+※　ここが怪しい
+
+```{r}
+# explainでpredict
+ex_ins_rf <- explain(iris_rf,data=iris.train, y='setosa',type='classification')
+predict_data1_explain <- predict(ex_ins_rf, data1)
+```
+
+## 予測結果
+
+```{r}
+predict_data1_explain
+```
+
+
+## SHAPをplot
+
+```{r}
+# B（順番の生成数）はとりあえず25に
+shap_data1 <- variable_attribution(exp_ins_rf, data1, type = 'shap', B=25)
+plot(shap_data1)
+```
+
+
+# DALEX（data set levelで使ってみる）
+
+## explainer作成
+```{r}
+
+```
+
+## 予測を確認
+```{r}
+predict_dataset_explain
+```
+
+## variable importanceを計算
+
+```{r}
+
+```
+
+## variable importanceをplot
