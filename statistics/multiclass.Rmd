@@ -5,25 +5,42 @@ date: "6/22/2020"
 output: html_document
 ---
 
+# datasetの準備
 
-
-# iris datasetの確認
+## iris datasetの確認
 
 ```{r}
 head(iris)
 ```
 
-# データセットの次元を確認
+## データセットの次元を確認
 
 ```{r}
 dim(iris)
 ```
 
-# データセットの要約統計量
+## データセットの要約統計量
 
 ```{r}
 summary(iris)
 ```
+
+## Speciesをdummy変数に
+
+library(caret)
+dummy_model <- dummyVars(~Species, data=iris, fullRank=FALSE)
+dummy_vars <- predict(dummy_model, iris)
+head(dummy_vars)
+
+
+## iris data set変更
+
+
+iris <- transform(iris,dm = dummy_vars)
+head(iris)
+
+
+
 
 # ランダムフォレストでモデリング
 
@@ -101,7 +118,8 @@ library('DALEX')
 data1 <- data.frame(Sepal.Length=5.0,
                     Sepal.Width=3.5,
                     Petal.Length=1.5,
-                    Petal.Width=0.2)
+                    Petal.Width=0.2
+                    )
 ```
 
 ## 作成したinstance dataで予測
@@ -145,21 +163,18 @@ iris.test$Species
 iris_pred
 ```
 
-## 誤差の作成
+## explainerの作成
+
 ```{r}
-vip <- model_parts(exp_ins_rf, loss_function = loss_cross_entropy)
-vip
+exp_ds_rf <- explain(iris_rf,data=iris.train, y='setosa',type='classification')
 ```
 
-## 予測を確認
-```{r}
-predict_dataset_explain
-```
 
 ## variable importanceを計算
 
 ```{r}
-
+vip <- variable_importance(exp_ds_rf)
+vip
 ```
 
 ## variable importanceをplot
