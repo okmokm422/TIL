@@ -69,7 +69,7 @@ dim(iris.test)
 ## 学習
 
 ```{r}
-iris_rf <- randomForest(Species ~ (.) ,data=iris.train)
+iris_rf <- randomForest(Species ~ (.), data=iris.train)
 iris_rf
 ```
 
@@ -83,7 +83,7 @@ iris_pred <- predict(iris_rf, iris.test)
 
 ```{r}
 table(iris_pred, iris.test$Species) # 予測結果の検証
-sum(pred == iris.test$Species) / length(pred) # 正解率
+sum(iris_pred == iris.test$Species) / length(iris_pred) # 正解率
 ```
 
 # DALEX（instance levelで使ってみる）
@@ -117,8 +117,8 @@ pred_data1
 
 ```{r}
 # explainでpredict
-ex_ins_rf <- explain(iris_rf,data=iris.train, y='setosa',type='classification')
-predict_data1_explain <- predict(ex_ins_rf, data1)
+exp_ins_rf <- explain(iris_rf,data=iris.train, y='setosa',type='classification')
+predict_data1_explain <- predict(exp_ins_rf, data1)
 ```
 
 ## 予測結果
@@ -138,10 +138,17 @@ plot(shap_data1)
 
 
 # DALEX（data set levelで使ってみる）
-
-## explainer作成
 ```{r}
+iris.test$Species
+```
+```{r}
+iris_pred
+```
 
+## 誤差の作成
+```{r}
+vip <- model_parts(exp_ins_rf, loss_function = loss_cross_entropy)
+vip
 ```
 
 ## 予測を確認
