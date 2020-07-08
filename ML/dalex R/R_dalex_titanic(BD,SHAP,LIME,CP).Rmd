@@ -289,6 +289,78 @@ plot_features(lime_expl)
 
 ### 10.6.2 The localModel package
 
+```{r}
+library('localModel')
+
+explainer_titanic_rf <- DALEX::explain(model = titanic_rf_v6, data = titanic[,colnames(johny_d)])
+local_model_rf <- individual_surrogate_model(explainer_titanic_rf, johny_d, size = 1000, seed = 1313)
+local_model_rf
+```
+
+```{r}
+plot(local_model_rf)
+```
+
+
+### 10.6.3The iml package
+
+```{r}
+library('iml')
+
+iml_rf = Predictor$new(titanic_rf_v6, data=titanic[, colnames(johny_d)])
+iml_glass_model <- LocalModel$new(iml_rf, x.interest = johny_d, k = 6)
+iml_glass_model
+```
+
+```{r}
+plot(iml_glass_model)
+```
+
+## 11 Ceteris-paribus Profiles
+
+## 11.6 Code snippets for R
+
+```{r}
+library('rms')
+explain_lmr_v6 <- archivist::aread('pbiecek/models/34e19')
+
+library('randomForest')
+explain_rf_v6 <- archivist::aread('pbiecek/models/6ed54')
+
+library('DALEX')
+henry <- archivist::aread('pbiecek/models/a6538')
+henry
+```
+
+### 11.6.1 Basic use of the individual_profile function
+
+```{r}
+library('DALEX')
+cp_titanic_rf <- individual_profile(explain_rf_v6, new_observation =  henry)
+cp_titanic_rf
+```
+
+```{r}
+library('ggplot2')
+plot(cp_titanic_rf, variables = c('age', 'fare')) + ggtitle('For the random forest model and the titanic dataset')
+```
+
+
+
+```{r}
+plot(cp_titanic_rf, variables = c('class', 'embarked'), variable_type = 'categorical') + 
+  ggtitle("Ceteris Paribus profile", "For the random forest model and the titanic dataset")
+```
+
+
+### 11.6.2 Advanced use of the individual_profile function
+
+```{r}
+
+```
+
+
+
 
 
 
