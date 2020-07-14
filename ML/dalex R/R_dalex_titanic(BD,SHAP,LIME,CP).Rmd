@@ -355,13 +355,24 @@ plot(cp_titanic_rf, variables = c('class', 'embarked'), variable_type = 'categor
 
 ### 11.6.2 Advanced use of the individual_profile function
 
-```{r}
+- variable_splitsを指定し、CP profilesを計算する値のリストを指定
+- [seq(start, stop, step)](http://tips-r.blogspot.com/2014/05/repseq.html)
 
+```{r}
+cp_titanic_rf <- individual_profile(explain_rf_v6, henry, 
+                                    variable_splits = list(age =seq(0, 70, 0.1), fare = seq(0, 100, 0.1)))
+plot(cp_titanic_rf, variables = c('age', 'fare')) + ylim(0, 1) + 
+  ggtitle("Ceteris Paribus profile", 
+          "For the random forest model and the titanic dataset")
 ```
 
 
+# 17 Variable’s Importance
 
+## 17.6 Code snippets for R
 
+```{r}
 
+```
 
 
