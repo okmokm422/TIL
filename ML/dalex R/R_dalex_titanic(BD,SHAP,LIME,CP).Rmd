@@ -130,6 +130,62 @@ henry
 ```
 
 
+## 5.2 Apartment prices
+
+- DALEXライブラリ内のapart priceデータ（1000件）を確認
+
+```{r}
+library('DALEX')
+head(apartments, 3)
+```
+
+
+```{r}
+head(apartments_test,3)
+```
+
+
+## 5.2. Data exploration
+
+### 5.2.2 Linear regression model
+
+```{r}
+apartments_lm_v5 <- lm(m2.price ~ ., data = apartments)
+anova(apartments_lm_v5)
+```
+
+
+### 5.2.3 Random forest model
+
+```{r}
+library('randomForest')
+set.seed(72)
+apartments_rf_v5 <- randomForest(m2.price ~ ., data = apartments)
+apartments_rf_v5
+```
+
+### 5.2.4 Support vector model
+
+```{r}
+library('e1071')
+set.seed(72)
+apartments_svm_v5 <- svm(m2.price ~ construction.year + surface + floor + no.rooms + district, data = apartments)
+apartments_svm_v5
+```
+
+
+### 5.2.5 Model predictions
+
+```{r}
+predict(apartments_lm_v5, apartments_test[1:6, ])
+```
+
+```{r}
+predict(apartments_rf_v5, apartments_test[1:6, ])
+```
+
+
+
 # 7 Break-down Plots for Additive Attributions
 
 ## 7.5 Code snippets for R
@@ -372,7 +428,7 @@ plot(cp_titanic_rf, variables = c('age', 'fare')) + ylim(0, 1) +
 ## 17.6 Code snippets for R
 
 ```{r}
-
+loss_root_mean_square(predict(apartments_rf_v5, apartmentsTest), apartmentsTest$m2.price)
 ```
 
 
