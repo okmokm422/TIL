@@ -176,13 +176,59 @@ apartments_svm_v5
 
 ### 5.2.5 Model predictions
 
+#### prediction
+
+- linear regression
+
 ```{r}
 predict(apartments_lm_v5, apartments_test[1:6, ])
 ```
 
+- random forest
+
 ```{r}
 predict(apartments_rf_v5, apartments_test[1:6, ])
 ```
+
+#### RMSE
+
+- linear regression RMSE
+
+```{r}
+predicted_apartments_lm <- predict(apartments_lm_v5, apartments_test)
+rmse_lm <- sqrt(mean((predicted_apartments_lm - apartments_test$m2.price)^2))
+rmse_lm
+```
+
+- random forest RMSE
+
+```{r}
+predicted_apartments_rf <- predict(apartments_rf_v5, apartments_test)
+rmse_rf <- sqrt(mean((predicted_apartments_rf - apartments_test$m2.price)^2))
+rmse_rf
+```
+
+
+### 5.2.6 Model adapters
+
+- linear regression explainer
+
+```{r}
+explain_apartments_lm_v5 <- explain.default(model = apartments_lm_v5, data= apartments_test, y = apartments_test$m2.price, label = 'Linear Regression')
+```
+
+- random forest model explainer
+
+```{r}
+explain_apartments_rf_v5 <-explain.default(model=apartments_rf_v5, data = apartments_test, y = apartments_test$m2.price, label = 'Random Forest')
+```
+
+- support vector machine explainer
+
+```{r}
+explain_apartments_svm_v5 <- explain.default(model = apartments_svm_v5, data = apartments_test, y = apartments_test$m2.price, label = 'Support Vector Machine')
+```
+
 
 
 
@@ -427,8 +473,46 @@ plot(cp_titanic_rf, variables = c('age', 'fare')) + ylim(0, 1) +
 
 ## 17.6 Code snippets for R
 
+- The initial loss
+
 ```{r}
 loss_root_mean_square(predict(apartments_rf_v5, apartmentsTest), apartmentsTest$m2.price)
 ```
+
+
+- calculate variable importance
+
+```{r}
+vip <- model_parts(explain_apartments_rf_v5, loss_function = loss_root_mean_square)
+vip
+```
+
+
+- present variance importance with boxplots
+
+```{r}
+library('ggplot2')
+plot(vip) + ggtitle('Permutation variable importance', '')
+```
+
+【メモ】
+
+- seedをセットしても同じ結果にならない！（5.2.3 5.2.5）
+- limeのexplainとdalexのexplainがあるので注意
+
+- 各指標の使い分けをどうする？（実務ではSHAPかLIMEか）
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
