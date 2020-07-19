@@ -2,4 +2,6 @@ ML/Advanced_Deep_Learning_with_PyTorch/data/
 ML/Advanced_Deep_Learning_with_PyTorch/weights/
 .DS_Store
 .ipynb_checkpoint
-ML/Advanced_Deep_Learning_with_PyTorch/pytorch_advanced
+ML/Advanced_Deep_Learning_with_PyTorch/pytorch_advanced/
+ML/Advanced_Deep_Learning_with_PyTorch/.ipynb_checkpoints
+ML/Advanced_Deep_Learning_with_PyTorch/.DS_Store
