@@ -5,3 +5,5 @@ ML/Advanced_Deep_Learning_with_PyTorch/weights/
 ML/Advanced_Deep_Learning_with_PyTorch/pytorch_advanced/
 ML/Advanced_Deep_Learning_with_PyTorch/.ipynb_checkpoints
 ML/Advanced_Deep_Learning_with_PyTorch/.DS_Store
+ML/Advanced_Deep_Learning_with_PyTorch/2-4-5_SSD_model_forward.ipynb
+.gitignore
