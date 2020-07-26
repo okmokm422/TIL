@@ -1,0 +1,20 @@
+# 多変量データの記述
+
+## 2.1　散布図
+
+##### excelファイルの読み込み
+
+```{r}
+library(openxlsx)
+phys <- read.xlsx('sampledata.xlsx')
+head(phys, n=5)
+```
+
+```{r}
+hist(phys$phys)
+```
+
+```{r}
+
+```
+

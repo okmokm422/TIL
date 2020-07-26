@@ -1,0 +1,264 @@
+# 第1章　一変量データの記述
+
+## 1.4 一変量データの扱い方
+
+
+### Excelファイル読み込み
+
+```{r}
+library(openxlsx)
+sampledata <- read.xlsx('sampledata.xlsx', sheet = 1)
+head(sampledata, 5)
+```
+
+### mathデータの抽出
+
+```{r}
+math <- sampledata$math
+length(math)
+```
+
+### mathデータの確認
+
+```{r}
+math
+```
+
+```{r}
+math[14]
+```
+
+### ヒストグラムの表示
+
+```{r}
+hist(math)
+```
+
+- 相対度数を表示
+
+```{r}
+hist(math, probability = TRUE)
+```
+
+### 平均
+
+```{r}
+mean(math)
+```
+
+### 不偏分散
+
+```{r}
+var(math)
+```
+
+### 標準偏差（不偏分散の平方根）
+
+```{r}
+sd(math)
+```
+
+### 標準偏差（分散の平方根）
+
+```{r}
+sqrt(var(math)*(length(math)-1)/length(math))
+```
+
+### 幾何平均
+
+```{r}
+x <- c(1.2, 1.1, 1.05) # c()：数字を並べてベクトル化
+prod(x)^(1/length(x)) # prod(x)はxの要素をすべて掛け算する関数
+```
+
+### 調和平均
+
+```{r}
+v <- c(60, 20)
+1/mean(1/v) # 逆数の平均の逆数＝調和平均
+```
+
+
+## 1.5 階級数の決め方
+
+### スタージェスの公式
+
+$k = 1 + \log_{2}n$
+
+```{r}
+hist(math, breaks = 'Sturges')
+```
+
+### 区切りの数を指定
+
+```{r}
+hist(math, breaks = 18)
+```
+
+
+### 階級の幅を詳細に指定
+
+```{r}
+hist(math, breaks = seq(0, 100, 10)) # 0から100まで10刻み
+```
+
+## 1.7 分位点と箱ひげ図
+
+### 中央値（ｎが奇数のとき）
+
+```{r}
+score <- c(56, 78, 90)
+median(score)
+```
+
+### 中央値（ｎが偶数のとき）
+
+```{r}
+score <- c(56, 78, 81, 90)
+median(score)
+```
+
+### 四分位点
+
+```{r}
+quantile(math)
+```
+
+
+### IQR：四分位偏差（第一四分位点と第三四分位点 の差Q3-Q1）
+
+```{r}
+IQR(math)
+```
+
+### 箱ひげ図
+
+```{r}
+boxplot(math)
+```
+
+### irisデータでboxplot
+
+#### データの中身を確認
+
+```{r}
+head(iris)
+```
+
+#### データの構造を表示
+
+```{r}
+str(iris)
+```
+
+#### irisのいち列目から３列目までを箱ひげ図にする
+
+```{r}
+boxplot(iris[, 1:3])
+```
+
+
+## 1.8 モード（最頻値）
+
+### 最頻値を求める方法  
+
+- モードのパッケージ：modeest
+- 以下のようにする
+
+```{r}
+names(which.max(table(math)))
+```
+
+
+- table(x)：出現回数の確認
+
+```{r}
+table(math)
+```
+
+
+- which.max(x)：xの中で最大値を返すメソッド
+
+```{r}
+which.max(table(math))
+```
+
+- names(x)：ラベルを返す
+
+```{r}
+names(sampledata)
+```
+
+
+## 1.9 欠損値の扱いなど
+
+```{r}
+NA + 1
+```
+
+```{r}
+mean(NA)
+```
+
+```{r}
+NA == 1
+```
+
+```{r}
+NA != 1
+```
+
+```{r}
+a <- 1
+```
+
+```{r}
+a == 1
+```
+
+```{r}
+a != 1
+```
+
+- TRUEは1と同じ
+
+```{r}
+TRUE + 1
+```
+
+- FALSEは1と同じ
+
+```{r}
+FALSE + 1
+```
+
+### 欠損値はデフォルトで読み飛ばされる
+
+```{r}
+math_na <- read.xlsx('sampledata.xlsx', sheet = 2)
+math_na
+```
+
+```{r}
+mean(math_na$math_na)
+```
+
+### 欠損値を追加して実験
+
+```{r}
+math_na2 <- c(NA, math_na)
+math_na2
+```
+
+- 欠損値があると値がNAになる
+
+```{r}
+mean(math_na2)
+```
+
+- 欠損値を削除するオプションを指定
+
+```{r}
+mean(math_na2, na.rm = TRUE)
+```
+
