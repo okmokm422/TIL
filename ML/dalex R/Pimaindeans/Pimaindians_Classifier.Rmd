@@ -1,0 +1,115 @@
+# Pimaindean Dataset Analutics
+
+- [dataset](https://www.kaggle.com/uciml/pima-indians-diabetes-database)
+
+## 0.ライブラリ読み込み
+
+```{r}
+# dataframe操作パッケージ
+library(dplyr)
+# 欠損値の補完パッケージ
+library(ForImp)
+# train_test_split/dummyVarsを行うパッケージ
+library(caret)
+# Kerasを使うパッケージ
+library(keras)
+```
+
+
+## 1. データセット読み込み
+```{r}
+df <- read.csv('diabetes.csv', header = TRUE)
+head(df, n = 5)
+```
+
+## 1-1. データ概要の確認
+
+```{r}
+# データの概要
+summary(df)
+```
+
+```{r}
+# データサイズの確認
+print(nrow(df)) # 行
+print(ncol(df)) # 列
+```
+
+```{r}
+# 列の名前一覧
+colnames(df)
+```
+
+```{r}
+# na値の確認
+na_df <- sapply(df, 2, function(y) any(is.na(y)))
+na_df
+```
+
+```{r}
+# null値の確認
+null_df <- sapply(df, function(y) any(is.null(y)))
+null_df
+```
+
+# 2. 前処理 
+
+## 2-1. データの分割
+```{r}
+X = select(.data = df, !Outcome)
+y = df$Outcome
+```
+
+```{r}
+set.seed(2020)
+# test：分割したレコード（今回は20%）の行番号を受け取る
+test <- createDataPartition(df$Outcome, p=0.2, list=FALSE)
+
+X_train <- X[-test, ]
+y_train <- y[-test]
+X_test <- X[test, ]
+y_test <- y[test]
+```
+
+```{r}
+X_train
+```
+
+## 2-2. 数値カラムとカテゴリ変数カラムに分割
+```{r}
+numerical_features = c('Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age')
+categolical_features = c(NULL)
+```
+
+## 2-3. 数値カラムに欠損値処理(中央値で穴埋め)・標準化
+```{r}
+# 中央値で補完
+medianimp(X_train[, numerical_features])
+medianimp(X_test[, numerical_features])
+# 標準化
+scale(X_train[, numerical_features])
+scale(X_test[, numerical_features])
+```
+
+
+# 2-4. カテゴリ変数カラムに欠損値処理（missingで穴埋め）・OneHot処理
+
+```{r}
+# missingで補完
+X_train[is.na(X_train[, categolical_features])] <- 'missing'
+X_train[is.na(X_train[, categolical_features])] <- 'missing'
+X_test[is.null(X_test[, categolical_features])] <- 'missing'
+X_test[is.null(X_test[, categolical_features])] <- 'missing'
+# One-Hot Encoding
+X_train[, categolical_features]
+```
+
+
+
+# 2. KerasでDNNモデル作成
+
+# 2-1
+
+```{r}
+```
+
