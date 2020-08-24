@@ -1,10 +1,15 @@
 # Pimaindean Dataset Analutics
 
+```{r}
+.libPaths()
+```
+
+
 - [dataset](https://www.kaggle.com/uciml/pima-indians-diabetes-database)
 
 # 1. ライブラリ読み込み
 
-```{r}
+```{r results = 'hide'}
 # dataframe操作パッケージ
 library(dplyr)
 # 欠損値の補完パッケージ
@@ -14,13 +19,13 @@ library(caret)
 # Keras
 library(keras)
 # lightgbm
-library(lightgbm)
+# library(lightgbm)
 ```
 
 
 # 2. データセット読み込み
 ```{r}
-df <- read.csv('diabetes.csv', header = TRUE)
+df <- read.csv('diabetes.csv')
 head(df, n = 5)
 ```
 
@@ -52,16 +57,6 @@ null_df
 # 4. 前処理 
 
 ## 4-1. データの分割
-```{r}
-X = data.frame(select(.data = df, !Outcome))
-y = data.frame(select(.data = df, Outcome))
-```
-
-```{r}
-dim(X)
-dim(y)
-```
-
 
 ```{r}
 set.seed(333)
@@ -76,11 +71,11 @@ dim(train_index)
 ```
 
 
-```{r}
-X_train <- X[train_index, ]
-y_train <- y[train_index, ]
-X_test <- X[-train_index, ]
-y_test <- y[-train_index, ]
+```{r results = 'hide'}
+X_train <- select(.data = df[train_index, ], -Outcome)
+y_train <- select(.data = df[train_index, ], Outcome)
+X_test <- select(.data = df[-train_index, ], -Outcome)
+y_test <- select(.data = df[-train_index, ], Outcome)
 ```
 
 
@@ -92,13 +87,13 @@ dim(y_test)
 ```
 
 ## 4-2. 数値カラムとカテゴリ変数カラムに分割
-```{r}
+```{r results = 'hide'}
 numerical_features = c('Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age')
 categolical_features = c(NULL)
 ```
 
 ### 4-2-1. 数値カラムに欠損値処理(中央値で穴埋め)・標準化
-```{r}
+```{r results = 'hide'}
 # 中央値で補完
 medianimp(X_train[, numerical_features])
 medianimp(X_test[, numerical_features])
@@ -109,7 +104,7 @@ scale(X_test[, numerical_features])
 
 ### 4-2-2. カテゴリ変数カラムに欠損値処理（missingで穴埋め）・OneHot処理
 
-```{r}
+```{r results = 'hide'}
 ## missingで補完
 # X_train[is.na(X_train[, categolical_features])] <- 'missing'
 # X_train[is.na(X_train[, categolical_features])] <- 'missing'
@@ -125,11 +120,26 @@ scale(X_test[, numerical_features])
 
 # 5. KerasでDNNモデル作成
 
+```{r results = 'hide'}
+X_train <- X_train %>% as.matrix() %>% lapply(as.double)
+y_train <- y_train %>% as.matrix() %>% lapply(as.double)
+X_test <- X_test %>% as.matrix() %>% lapply(as.double)
+y_test <- y_test %>% as.matrix() %>% lapply(as.double)
+```
+
+```{r}
+typeof(X_train)
+typeof(y_train)
+typeof(X_test)
+typeof(y_test)
+```
+
+
 ```{r}
 model = keras_model_sequential()
 # 重みの初期化方法確認！！
 model %>%
-  layer_dense(units=32, activation="relu", input_shape = c(dim(X_test)[2]), kernel_initializer = 'glorot_normal') %>%
+  layer_dense(units=32, activation="relu", input_shape = c(dim(X_train)[2]), kernel_initializer = 'glorot_normal') %>%
   layer_dropout(rate=0.1) %>%
   layer_dense(units=16, activation="relu", input_shape = 32, kernel_initializer = 'glorot_normal') %>%
   layer_dropout(rate=0.1) %>%
@@ -140,15 +150,14 @@ model %>%
 
 ```{r}
 model %>% compile(
-  loss = "categorical_crossentropy",
-  optimizer = optimizer_rmsprop(),
+  loss = "binary_crossentropy",
+  optimizer = 'rmsprop',
   metrics = c("accuracy")
 )
 ```
 
 
 ```{r}
-model %>% fit(X_train, y_train,
-              epochs = 10, batch_size = 100, validation_split = 0.2)
+model %>% fit(x = X_train , y = y_train)
 ```
 
