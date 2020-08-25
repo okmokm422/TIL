@@ -1,9 +1,0 @@
-.DS_Store
-.ipynb_checkpoint
-.gitignore
-ML/2. Advanced_Deep_Learning_with_PyTorch/data/
-ML/2. Advanced_Deep_Learning_with_PyTorch/weights/
-ML/2. Advanced_Deep_Learning_with_PyTorch/pytorch_advanced/
-ML/2. Advanced_Deep_Learning_with_PyTorch/utils/
-ML/2. Advanced_Deep_Learning_with_PyTorch/.ipynb_checkpoints
-ML/2. Advanced_Deep_Learning_with_PyTorch/.DS_Store
