@@ -1,0 +1,348 @@
+# DALEX R Classification
+
+# パッケージ準備
+## パッケージ読み込み
+```{r results = 'hide'}
+library(dplyr) # dataframe操作
+library(ForImp) # 欠損値の補完
+library(caret) # train_test_split/dummyVars
+library(tidyr) # 欠損値削除
+library(rms) # ロジスティック回帰
+library(randomForest) # ランダムフォレスト
+library(ggplot2) #plot
+set.seed(2020)
+```
+
+
+- [dataset](https://www.kaggle.com/uciml/pima-indians-diabetes-database)
+
+# データ用意
+## pima-indiansデータセット読み込み
+```{r results = 'hide'}
+df <- read.csv('diabetes.csv', header=TRUE)
+```
+
+## df確認
+```{r}
+head(df)
+```
+## dfのshapeを確認
+```{r}
+dim(df)
+```
+
+## dfの欠損値を確認
+```{r}
+summary(df)
+```
+
+## dfの分布を確認 
+```{r}
+hist(df)
+```
+
+## インスタンスデータ作成
+```{r}
+kei <- data.frame(
+         Pregnancies = 6,
+         Glucose = 148,
+         BloodPressure = 72,
+         BMI = 33.6,
+         DiabetesPedigreeFunction = 0.627, 
+         Age = 50,
+         Outcome = 1)
+
+keiko <- data.frame(
+         Pregnancies = 1,
+         Glucose = 85,
+         BloodPressure = 66,
+         BMI = 26.6,
+         DiabetesPedigreeFunction = 0.351, 
+         Age = 31, 
+         Outcome = 0)
+```
+
+
+# データ前処理
+## dfから意味のないデータを削除
+```{r}
+# Glucose0なんて人はいないので削除
+df[(df$Glucose==0 & df$Outcome==0), "Glucose"] <- NaN
+df[(df$Glucose==0 & df$Outcome==1), "Glucose"] <- NaN
+df <- df %>% drop_na(Glucose)
+
+# 血圧0なんて人はいないので削除
+df[df$BloodPressure==0 & df$Outcome==0, "BloodPressure"] <- NaN
+df[df$BloodPressure==0 & df$Outcome==1, "BloodPressure"] <- NaN
+df <- df %>% drop_na(BloodPressure)
+
+# 欠損値が多いので列ごと削除
+df <- df[, !(colnames(df) %in% c("SkinThickness", "Insulin"))]
+
+# BMIが0の人はいないので削除
+df[df$BMI==0 & df$Outcome==0, "BMI"] <- NaN
+df[df$BMI==0 & df$Outcome==1, "BMI"] <- NaN
+df <- df %>% drop_na(BMI)
+
+dim(df)
+```
+
+## 数値カラムとカテゴリカラムを抽出
+```{r results = 'hide'}
+numerical_features = c('Pregnancies', 'Glucose', 'BloodPressure', 'BMI', 'DiabetesPedigreeFunction', 'Age')
+categolical_features = c(NULL)
+```
+
+## 数値カラムへの処理
+```{r results = 'hide'}
+# 中央値で補完、標準化
+df_for_prep <- rbind(kei, keiko, df)
+df_for_prep[, numerical_features] <- medianimp(df_for_prep[, numerical_features])
+df_for_prep[, numerical_features] <- scale(df_for_prep[, numerical_features])
+df_for_prep
+```
+
+
+```{r}
+# データフレーム化
+df <- df_for_prep[c(-1, -2), ] %>% as.data.frame()
+kei <- df_for_prep[1, ] %>% as.data.frame()
+keiko <- df_for_prep[2, ] %>% as.data.frame()
+```
+
+
+## カテゴリカラムへの処理
+```{r results = 'hide'}
+## missingで補完
+# df[is.na(df[, categolical_features])] <- 'missing'
+## One-Hot Encoding
+# dummy_model <- dummyVars(~categolical_features, data=df, fullRank=FALSE)
+# dummy_vars <- predict(dummy_model, df)
+# df <- data.frame(df, dummy_vars)
+```
+
+```{r}
+hist(df)
+```
+
+
+## trainとtestに分割
+```{r}
+colnames(df)
+```
+
+
+```{r}
+set.seed(2020)
+# 分割したレコード（今回は80%）の行番号を受け取る
+# データの分布を維持したまま分割
+train_index <- createDataPartition(df[ , 7], p=0.8, list=FALSE)
+```
+
+```{r}
+dim(df)
+dim(train_index)
+```
+
+```{r results = 'hide'}
+train <- df[train_index, ]
+test <- df[-train_index, ]
+```
+
+```{r}
+mean(train[, 7] == 1)
+mean(test[, 7] == 1)
+```
+
+
+```{r}
+colnames(train)
+colnames(test)
+```
+
+
+```{r}
+X_train <- train[, -7]
+y_train <- train$Outcome
+X_test <- test[, -7]
+y_test <- test$Outcome
+```
+
+
+## モデル作成〜予測（ロジスティック回帰）
+
+```{r}
+# ロジスティック回帰
+clf_lr <- lrm(Outcome == 1 ~ Pregnancies + Glucose + BloodPressure + BMI + DiabetesPedigreeFunction + Age, train)
+clf_lr
+```
+
+```{r}
+clf_lr_pred <- predict(clf_lr, test, type = 'fitted')
+clf_lr_pred <- if_else(clf_lr_pred>0.5, 1, 0)
+sum(y_test == clf_lr_pred) / nrow(test)
+```
+
+
+## モデル作成〜予測（ランダムフォレスト）
+
+```{r}
+# mtry（使用する特徴量の数）をグリッドサーチ
+set.seed(2020)
+tuneRF(X_train, y_train %>% as.factor(), doBest = T)
+```
+
+```{r}
+# 目的変数をfactor型に変換すること：http://shinya131-note.hatenablog.jp/entry/2015/10/26/233823
+clf_rf <- randomForest(x = X_train, y = y_train %>% as.factor(), mtry = 6, ntree = 5000)
+clf_rf
+```
+
+```{r}
+importance(clf_rf)
+```
+
+
+## 予測
+```{r}
+clf_rf_pred <- predict(clf_rf, test)
+```
+
+## testデータの正解率
+```{r}
+tb <- table(clf_rf_pred, test$Outcome)
+sum(diag(tb)) / sum(tb) 
+```
+
+## つくったデータで予測
+```{r}
+predict(clf_lr, kei[, -7])
+```
+
+```{r}
+predict(clf_rf, kei[, -7])
+```
+
+
+```{r}
+predict(clf_lr, keiko[, -7])
+```
+
+```{r}
+predict(clf_rf, keiko[, -7])
+```
+
+
+
+# インスタンスレベルでの分析
+
+## Explainer作成
+```{r}
+exp_clf_lr <- DALEX::explain(model = clf_lr, data = X_test, y = y_test==1, type = 'classification', label='Logistic Regression')
+exp_clf_rf <- DALEX::explain(model = clf_rf, data = X_test, y = y_test==1, type = 'classification', label='Random Forest')
+```
+
+# Break Down Plot
+```{r}
+# ロジスティック回帰
+bd_clf_lr_kei <- DALEX::predict_parts(explainer = exp_clf_lr, new_observation = kei, type = "break_down")
+bd_clf_lr_keiko <- DALEX::predict_parts(explainer = exp_clf_lr, new_observation = keiko, type = "break_down")
+plot(bd_clf_lr_kei)
+plot(bd_clf_lr_keiko)
+```
+
+```{r}
+# ランダムフォレスト
+bd_clf_rf_kei <- DALEX::predict_parts(explainer = exp_clf_rf, new_observation = kei, type = "break_down")
+bd_clf_rf_keiko <- DALEX::predict_parts(explainer = exp_clf_rf, new_observation = keiko, type = "break_down")
+plot(bd_clf_rf_kei)
+plot(bd_clf_rf_keiko)
+```
+
+
+# shap
+```{r}
+# ロジスティック回帰
+shap_clf_lr_kei <- DALEX::predict_parts(explainer = exp_clf_lr, new_observation = kei, type = "shap", B = 10)
+shap_clf_lr_keiko <- DALEX::predict_parts(explainer = exp_clf_lr, new_observation = keiko, type = "shap", B = 10)
+plot(shap_clf_lr_kei)
+plot(shap_clf_lr_keiko)
+```
+
+
+```{r}
+# ランダムフォレスト
+shap_clf_rf_kei <- DALEX::predict_parts(explainer = exp_clf_rf, new_observation = kei, type = "shap", B = 10)
+shap_clf_rf_keiko <- DALEX::predict_parts(explainer = exp_clf_rf, new_observation = keiko, type = "shap", B = 10)
+plot(shap_clf_rf_kei)
+plot(shap_clf_rf_keiko)
+```
+
+# Cetris Paribus Profiles
+
+```{r}
+# ロジスティック回帰
+cp_clf_lr_2 <- DALEX::individual_profile(explainer = exp_clf_lr, new_observation = rbind(kei, keiko))
+library(ingredients)
+plot(cp_clf_lr_2, color = "_ids_", variables = c("Glucose", "BMI", "Pregnancies")) + 
+  scale_color_manual(name = "names:", breaks = 1:2, 
+            values = c("#4378bf", "#8bdcbe"), 
+            labels = c("kei" , "keiko")) + 
+  ggtitle("Ceteris-paribus profile - Logistic Regression", "")
+```
+
+```{r}
+# ランダムフォレスト
+cp_clf_rf_2 <- DALEX::individual_profile(explainer = exp_clf_rf, new_observation = rbind(kei, keiko))
+library(ingredients)
+plot(cp_clf_rf_2, color = "_ids_", variables = c("Glucose", "BMI", "Pregnancies")) + 
+  scale_color_manual(name = "names:", breaks = 1:2, 
+            values = c("#4378bf", "#8bdcbe"), 
+            labels = c("kei" , "keiko")) + 
+  ggtitle("Ceteris-paribus profile - Random Forest", "")
+```
+
+# データセットレベルでの分析
+
+## Model-performance
+
+```{r}
+mper_clf_lr <- DALEX::model_performance(exp_clf_lr)
+mper_clf_lr
+```
+
+
+```{r}
+mper_clf_rf <- DALEX::model_performance(exp_clf_rf)
+mper_clf_rf
+```
+
+```{r}
+plot(mper_clf_lr, mper_clf_rf, geom = "prc") 
+plot(mper_clf_lr, mper_clf_rf, geom = "roc")
+plot(mper_clf_lr, mper_clf_rf, geom = "ecdf")
+plot(mper_clf_lr, mper_clf_rf, geom = "boxplot")
+plot(mper_clf_lr, mper_clf_rf, geom = "gain") 
+plot(mper_clf_lr, mper_clf_rf, geom = "lift") 
+plot(mper_clf_lr, mper_clf_rf, geom = "histogram") 
+```
+
+##  Variable-importance
+
+```{r}
+set.seed(2020)
+vip_clf_lr <- DALEX::model_parts(explainer = exp_clf_lr, type = "variable_importance", N = 20)
+vip_clf_lr
+```
+
+```{r}
+vip_clf_rf <- DALEX::model_parts(explainer = exp_clf_rf, type = "variable_importance", N = 20)
+vip_clf_rf
+```
+
+
+```{r}
+plot(vip_clf_lr) + ggtitle("Mean variable-importance", "") 
+plot(vip_clf_rf) + ggtitle("Mean variable-importance", "") 
+```
+
