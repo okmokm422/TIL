@@ -1,0 +1,355 @@
+
+# DALEX R Regression
+
+# パッケージ準備
+## パッケージ読み込み
+```{r results = 'hide'}
+library(dplyr) # dataframe操作
+library(ForImp) # 欠損値の補完
+library(caret) # train_test_split/dummyVars
+library(tidyr) # 欠損値削除
+library(rms) # ロジスティック回帰
+library(randomForest) # ランダムフォレスト
+library(ggplot2) #plot
+set.seed(2020)
+```
+
+
+- [Medical Cost Personal Datasets](https://www.kaggle.com/mirichoi0218/insurance)
+
+# データ用意
+## データセット読み込み
+```{r results = 'hide'}
+df <- read.csv('insurance.csv', header=TRUE)
+```
+
+## df確認
+```{r}
+head(df)
+```
+## dfのshapeを確認
+```{r}
+dim(df)
+```
+
+## dfの欠損値を確認
+```{r}
+sapply(df, function(y) any(is.na(y)))
+```
+
+## データフレームの状況
+```{r}
+summary(df)
+```
+
+## 数値カラムとカテゴリカラムを抽出
+```{r results = 'hide'}
+numerical_features = c('age', 'bmi', 'charges')
+categolical_features = c('sex', 'children', 'smoker', 'region')
+```
+
+## dfの分布を確認 
+```{r}
+hist(df[, numerical_features])
+```
+
+
+## インスタンスデータ作成
+```{r}
+kei <- data.frame(
+         age = 18,
+         sex = 'male',
+         bmi = 33.770,
+         children = 1,
+         smoker = 'no', 
+         region = 'southeast', 
+         charges = 1725.55230
+         )
+
+keiko <- data.frame(
+         age = 52,
+         sex = 'female',
+         bmi = 40.224,
+         children = 3,
+         smoker = 'yes', 
+         region = 'southwest', 
+         charges = 4106.0248168
+         )
+```
+
+
+# データ前処理
+
+## 数値カラムへの処理
+```{r results = 'hide'}
+# 中央値で補完、標準化
+df_for_prep <- rbind(kei, keiko, df)
+df_for_prep[, numerical_features] <- medianimp(df_for_prep[, numerical_features])
+df_for_prep[, numerical_features] <- scale(df_for_prep[, numerical_features])
+df_for_prep
+```
+
+
+## カテゴリカラムへの処理
+```{r}
+# missingで補完
+df_for_prep[is.na(df_for_prep[, categolical_features])==TRUE, ] <- 'missing'
+# One-Hot Encoding
+dummy_model <- dummyVars(~., data = df_for_prep)
+df_for_prep <- predict(dummy_model, df_for_prep) %>% as.data.frame()
+```
+
+```{r}
+df_for_prep
+```
+
+
+```{r}
+# 相関係数を確認
+cor(df_for_prep)
+```
+
+```{r}
+# 多重共線性があるsexmale, smorkyesを削除
+# chargeとの相関係数が小さいchildren, regionを削除
+df_for_prep <- df_for_prep[, c(-3, -5, -7, -8, -9, -10, -11)]
+```
+
+
+```{r}
+dim(df_for_prep)
+head(df_for_prep)
+```
+
+```{r}
+# 前処理用dfからインスタンスデータ(kei,keiko)を抽出
+df <- df_for_prep[c(-1, -2), ] %>% as.data.frame()
+kei <- df_for_prep[1, ] %>% as.data.frame()
+keiko <- df_for_prep[2, ] %>% as.data.frame()
+```
+
+## trainとtestに分割
+```{r}
+colnames(df)
+ncol(df)
+```
+
+
+```{r}
+set.seed(2020)
+# 分割したレコード（今回は80%）の行番号を受け取る
+# データの分布を維持したまま分割
+train_index <- createDataPartition(df[, 5], p=0.8, list=FALSE)
+```
+
+```{r results = 'hide'}
+train <- df[train_index, ]
+test <- df[-train_index, ]
+```
+
+```{r}
+X_train <- train[, -5]
+y_train <- train$charges %>% as.data.frame()
+colnames(y_train) <- 'charges'
+X_test <- test[, -5]
+y_test <- test$charges %>% as.data.frame()
+colnames(y_test) <- 'charges'
+```
+
+
+```{r}
+y_train
+```
+
+```{r}
+dim(df)
+dim(X_train)
+dim(y_train)
+dim(X_test)
+dim(y_test)
+```
+
+## モデル作成〜予測（ロジスティック回帰）
+
+```{r}
+# ロジスティック回帰
+reg_lr <- lm(charges ~ ., data = train)
+summary(reg_lr)
+```
+
+
+```{r}
+pred_reg_lr <- predict(reg_lr, X_test) %>% as.data.frame()
+pred_reg_lr %>% head()
+```
+
+```{r}
+rmse <- pred_reg_lr - y_test
+rmse
+```
+
+
+## モデル作成〜予測（ランダムフォレスト）
+
+```{r}
+dim(df)
+dim(X_train)
+dim(y_train)
+dim(X_test)
+dim(y_test)
+```
+
+
+```{r}
+# mtry（使用する特徴量の数）をグリッドサーチ
+# set.seed(2020)
+# tuneRF(X_train, y_train, doBest = T)
+```
+
+```{r}
+reg_rf <- randomForest(charges ~ ., data = train)
+reg_rf
+```
+
+```{r}
+importance(reg_rf)
+```
+
+
+## 予測
+```{r results='hide'}
+pred_reg_rf <- predict(reg_rf, test) %>% as.data.frame()
+pred_reg_rf %>% head()
+```
+
+## つくったデータで予測
+```{r}
+kei
+keiko
+```
+
+
+```{r}
+predict(reg_lr, kei[, -10])
+```
+
+```{r}
+predict(reg_lr, keiko[, -10])
+```
+
+
+```{r}
+predict(reg_rf, kei[, -10])
+```
+
+```{r}
+predict(reg_rf, keiko[, -10])
+```
+
+
+# インスタンスレベルでの分析
+
+## Explainer作成
+```{r}
+exp_reg_lr <- DALEX::explain(model = reg_lr, data = X_test, y = y_test==1, label='Logistic Regression')
+exp_reg_rf <- DALEX::explain(model = reg_rf, data = X_test, y = y_test==1, label='Random Forest')
+```
+
+# Break Down Plot
+```{r}
+# ロジスティック回帰
+bd_reg_lr_kei <- DALEX::predict_parts(explainer = exp_reg_lr, new_observation = kei, type = "break_down")
+bd_reg_lr_keiko <- DALEX::predict_parts(explainer = exp_reg_lr, new_observation = keiko, type = "break_down")
+plot(bd_reg_lr_kei)
+plot(bd_reg_lr_keiko)
+```
+
+```{r}
+# ランダムフォレスト
+bd_reg_rf_kei <- DALEX::predict_parts(explainer = exp_reg_rf, new_observation = kei, type = "break_down")
+bd_reg_rf_keiko <- DALEX::predict_parts(explainer = exp_reg_rf, new_observation = keiko, type = "break_down")
+plot(bd_reg_rf_kei)
+plot(bd_reg_rf_keiko)
+```
+
+
+# shap
+```{r}
+# ロジスティック回帰
+shap_reg_lr_kei <- DALEX::predict_parts(explainer = exp_reg_lr, new_observation = kei, type = "shap", B = 10)
+shap_reg_lr_keiko <- DALEX::predict_parts(explainer = exp_reg_lr, new_observation = keiko, type = "shap", B = 10)
+plot(shap_reg_lr_kei)
+plot(shap_reg_lr_keiko)
+```
+
+
+```{r}
+# ランダムフォレスト
+shap_reg_rf_kei <- DALEX::predict_parts(explainer = exp_reg_rf, new_observation = kei, type = "shap", B = 10)
+shap_reg_rf_keiko <- DALEX::predict_parts(explainer = exp_reg_rf, new_observation = keiko, type = "shap", B = 10)
+plot(shap_reg_rf_kei)
+plot(shap_reg_rf_keiko)
+```
+
+# Cetris Paribus Profiles
+
+```{r}
+# ロジスティック回帰
+cp_reg_lr_3 <- DALEX::individual_profile(explainer = exp_reg_lr, new_observation = rbind(kei, keiko))
+library(ingredients)
+plot(cp_reg_lr_3, color = "_ids_", variables = c("smokerno", "age", "bmi")) + 
+  scale_color_manual(name = "names:", breaks = 1:2, 
+            values = c("#4378bf", "#8bdcbe"), 
+            labels = c("kei" , "keiko")) + 
+  ggtitle("Ceteris-paribus profile - Logistic Regression", "")
+```
+
+```{r}
+# ランダムフォレスト
+cp_reg_rf_3 <- DALEX::individual_profile(explainer = exp_reg_rf, new_observation = rbind(kei, keiko))
+library(ingredients)
+plot(cp_reg_rf_3, color = "_ids_", variables = c("smokerno", "age", "bmi")) + 
+  scale_color_manual(name = "names:", breaks = 1:2, 
+            values = c("#4378bf", "#8bdcbe"), 
+            labels = c("kei" , "keiko")) + 
+  ggtitle("Ceteris-paribus profile - Random Forest", "")
+```
+
+# データセットレベルでの分析
+
+## Model-performance
+
+```{r}
+mper_reg_lr <- DALEX::model_performance(exp_reg_lr)
+mper_reg_lr
+```
+
+
+```{r}
+mper_reg_rf <- DALEX::model_performance(exp_reg_rf)
+mper_reg_rf
+```
+
+```{r}
+plot(mper_reg_lr)
+```
+
+##  Variable-importance
+
+```{r}
+set.seed(2020)
+vip_reg_lr <- DALEX::model_parts(explainer = exp_reg_lr, type = "variable_importance", N = 20)
+vip_reg_lr
+```
+
+```{r}
+vip_reg_rf <- DALEX::model_parts(explainer = exp_reg_rf, type = "variable_importance", N = 20)
+vip_reg_rf
+```
+
+
+```{r}
+plot(vip_reg_lr) + ggtitle("Mean variable-importance", "") 
+plot(vip_reg_rf) + ggtitle("Mean variable-importance", "") 
+```
+
