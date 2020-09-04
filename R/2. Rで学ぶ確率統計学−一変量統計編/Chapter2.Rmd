@@ -1,4 +1,4 @@
-# 多変量データの記述
+# 2. 多変量データの記述
 
 ## 2.1　散布図
 
@@ -6,15 +6,50 @@
 
 ```{r}
 library(openxlsx)
-phys <- read.xlsx('sampledata.xlsx')
-head(phys, n=5)
+score <- read.xlsx('sampledata.xlsx')
+phys <- score$phys
+math <- score$math
+```
+
+
+```{r}
+hist(phys)
 ```
 
 ```{r}
-hist(phys$phys)
+hist(math)
 ```
+
+```{r}
+plot(math, phys)
+```
+
+## 2.2 相関係数
+
+```{r}
+# 相関係数：cor()
+# 何も指定しない＝ピアソンの積率相関係数
+cor(math, phys)
+```
+
+```{r}
+# 不偏共分散：cov()
+cov(math, phys)
+```
+
+## 2.3　ピアソンの積率相関係数の大きさの解釈
 
 ```{r}
 
 ```
+
+
+
+
+
+
+
+
+
+
 
