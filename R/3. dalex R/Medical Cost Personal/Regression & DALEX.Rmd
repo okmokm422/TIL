@@ -53,6 +53,11 @@ categolical_features = c('sex', 'children', 'smoker', 'region')
 hist(df[, numerical_features])
 ```
 
+```{r}
+plot(df[, numerical_features])
+```
+
+
 
 ## インスタンスデータ作成
 ```{r}
@@ -177,6 +182,11 @@ reg_lr <- lm(charges ~ ., data = train)
 summary(reg_lr)
 ```
 
+```{r}
+plot(reg_lr)
+```
+
+
 
 ```{r}
 pred_reg_lr <- predict(reg_lr, X_test) %>% as.data.frame()
@@ -184,7 +194,8 @@ pred_reg_lr %>% head()
 ```
 
 ```{r}
-rmse <- pred_reg_lr - y_test
+mse <- (pred_reg_lr - y_test)^2
+rmse <- sqrt(mse) %>% sum()
 rmse
 ```
 
@@ -251,8 +262,8 @@ predict(reg_rf, keiko[, -10])
 
 ## Explainer作成
 ```{r}
-exp_reg_lr <- DALEX::explain(model = reg_lr, data = X_test, y = y_test==1, label='Logistic Regression')
-exp_reg_rf <- DALEX::explain(model = reg_rf, data = X_test, y = y_test==1, label='Random Forest')
+exp_reg_lr <- DALEX::explain(model = reg_lr, data = X_test, y = y_test, label='Logistic Regression')
+exp_reg_rf <- DALEX::explain(model = reg_rf, data = X_test, y = y_test, label='Random Forest')
 ```
 
 # Break Down Plot
@@ -331,8 +342,9 @@ mper_reg_rf
 ```
 
 ```{r}
-plot(mper_reg_lr)
+plot(mper_reg_lr, mper_reg_rf, geom = 'ecdf')
 ```
+
 
 ##  Variable-importance
 
