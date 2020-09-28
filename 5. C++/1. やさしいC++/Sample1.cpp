@@ -1,10 +1,8 @@
-#include <iostream>
-using namespace std;
+// 画面に文字を出力するコード
+#include <stdio.h>
 
 int main()
 {
-  cout << "ようこそC++へ!\n";
-  cout << "C++を始めましょう！\n";
-
-  return 0;
+    printf("Hello World!\n");
+    return 0;
 }
