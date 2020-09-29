@@ -1,8 +1,11 @@
 // 画面に文字を出力するコード
-#include <stdio.h>
+#include <iostream>
+using namespace std;
 
 int main()
 {
-    printf("Hello World!\n");
+    cout << u8"ようこそC++へ¥n";
+    cout << u8"C++をはじめましょう！¥n";
+
     return 0;
 }
