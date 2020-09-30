@@ -4,8 +4,8 @@ using namespace std;
 
 int main()
 {
-    cout << u8"ようこそC++へ¥n";
-    cout << u8"C++をはじめましょう！¥n";
+    cout << "ようこそC++へ\n";
+    cout << "C++をはじめましょう！\n";
 
     return 0;
 }
