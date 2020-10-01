@@ -1,0 +1,93 @@
+---
+title: "時系列データ分析について"
+output: html_notebook
+---
+
+- 参考  
+  - [現場ですぐ使える時系列データ分析～データサイエンティストのための基礎知識](https://www.amazon.co.jp/dp/B00KNRL068/ref=cm_sw_em_r_mt_dp_FWCDFb1RJQY08)
+
+
+# Chapter1　時系列データのリテラシー
+
+- 時系列データとは  
+    - 対象のある側面を特定の時間間隔で観測した結果の集まり
+    
+    
+- 時系列データとヒストグラム  
+    - 時系列データでヒストグラムを作ると、時間情報は無意味であるということになる  
+    - 理由  
+        ヒストグラム:確率分布の形状を調べて、同一な確率分布から独立に抽出した標本か調べる  
+        時系列データは抽出順＝時間情報を情報源とする
+        
+        
+- 時系列データのモデル化  
+    1. 特定の時点の値が、過去の値に依存する分布  
+        - 自己回帰モデル（ARモデル）
+    1. 日々分布が変化する（分散を時間依存の関数で表す）  
+        - 自己回帰条件付き分散不均一モデル（ARCHモデル） 
+        - GARCHモデル
+
+
+# Chapter2 時系列データの観察と要約
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(knitr)
+
+opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+```{r}
+exdata <- load("演習用データ/.Rdata")
+price4 <- as.data.frame(price4)
+price4 %>% head()
+```
+
+```{r message=FALSE}
+attach(price4)
+```
+
+```{r}
+par(family = "HiraKakuProN-W3", mfcol=c(2, 2))
+plot(x5202, type="l", main="旭硝子")
+plot(x4927, type="l", main="ポーラHD")
+plot(x7272, type="l", main="ヤマハ")
+plot(x4502, type="l", main="武田薬品")
+```
+
+
+#### 投資開始時点の株価を1に揃える
+
+```{r}
+par(family = "HiraKakuProN-W3", mfcol=c(2, 2))
+plot(x5202/x5202[1], type="l", main="旭硝子")
+plot(x4927/x4927[1], type="l", main="ポーラHD")
+plot(x7272/x7272[1], type="l", main="ヤマハ")
+plot(x4502/x4502[1], type="l", main="武田薬品")
+```
+
+#### 対数差収益率
+
+$r_t＝logP_t－logP_{t－1}$
+
+```{r}
+# ％表示
+par(family = "HiraKakuProN-W3", mfcol=c(2, 2))
+plot(diff(log(x5202))*100,type="l",main="板硝子",xlab="Time",ylab="x5202")
+plot(diff(log(x4927))*100,type="l",main="ポーラHD",xlab="Time",ylab="x4927")
+plot(diff(log(x7272))*100,type="l",main="ヤマハ",xlab="Time",ylab="x7272")
+plot(diff(log(x4502))*100,type="l",main="武田薬品",xlab="Time",ylab="x4502")
+```
+
+#### 縦軸のスケールをそろえる
+
+```{r}
+par(family = "HiraKakuProN-W3", mfcol=c(2, 2))
+plot(diff(log(x5202))*100,type="l",main="板硝子",xlab="Time",ylab="x5202",ylim=range(diff(log(price4$x5202))*100))
+plot(diff(log(x4927))*100,type="l",main="ポーラHD",xlab="Time",ylab="x4927",ylim=range(diff(log(price4$x5202))*100))
+plot(diff(log(x7272))*100,type="l",main="ヤマハ",xlab="Time",ylab="x7272",ylim=range(diff(log(price4$x5202))*100))
+plot(diff(log(x4502))*100,type="l",main="武田薬品",xlab="Time",ylab="x4502",ylim=range(diff(log(price4$x5202))*100))
+```
+
