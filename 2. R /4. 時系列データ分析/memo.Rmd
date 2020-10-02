@@ -9,6 +9,7 @@ output: html_notebook
 
 # Chapter1　時系列データのリテラシー
 
+
 - 時系列データとは  
     - 対象のある側面を特定の時間間隔で観測した結果の集まり
     
@@ -31,7 +32,7 @@ output: html_notebook
 # Chapter2 時系列データの観察と要約
 
 
-```{r}
+```{r message=FALSE}
 library(dplyr)
 library(ggplot2)
 library(knitr)
@@ -48,6 +49,9 @@ price4 %>% head()
 ```{r message=FALSE}
 attach(price4)
 ```
+
+
+#### 元データ（株価）を確認
 
 ```{r}
 par(family = "HiraKakuProN-W3", mfcol=c(2, 2))
@@ -89,5 +93,130 @@ plot(diff(log(x5202))*100,type="l",main="板硝子",xlab="Time",ylab="x5202",yli
 plot(diff(log(x4927))*100,type="l",main="ポーラHD",xlab="Time",ylab="x4927",ylim=range(diff(log(price4$x5202))*100))
 plot(diff(log(x7272))*100,type="l",main="ヤマハ",xlab="Time",ylab="x7272",ylim=range(diff(log(price4$x5202))*100))
 plot(diff(log(x4502))*100,type="l",main="武田薬品",xlab="Time",ylab="x4502",ylim=range(diff(log(price4$x5202))*100))
+```
+
+## 2-1 時系列データの分布と要約
+
+株価や収益率などの金融データでは、同一条件のもとのデータの数を増やすことは困難
+→　同一条件のもとでのデータということにする
+
+
+### 平均収益率とボラティリティ(平均収益率の標準偏差)
+
+```{r  message=FALSE}
+attach(return4)
+```
+
+```{r}
+# 旭硝子
+mean(x5202)
+sd(x5202)
+```
+
+```{r}
+# ヤマハ
+mean(x4927)
+sd(x4927)
+```
+
+```{r}
+# ポーラHD
+mean(x7272)
+sd(x7272)
+```
+
+```{r}
+# 武田薬品
+mean(x4502)
+sd(x4502)
+```
+
+
+```{r}
+par(family = "HiraKakuProN-W3", mfcol=c(2, 2))
+hist(x5202, main="旭硝子", breaks = -10:20)
+hist(x4927, main="ポーラHD", breaks = -10:20)
+hist(x7272, main="ヤマハ", breaks = -10:20)
+hist(x4502, main="武田薬品", breaks = -10:20)
+```
+
+### 相関関係を確認
+
+
+```{r}
+par(family = "HiraKakuProN-W3")
+plot(x = x7272, y = x4502, xlab="ヤマハ", ylab="武田薬品", main="収益率の散布図")
+```
+
+```{r}
+cor(return4$x7272, return4$x4502)
+```
+
+散布図行列
+
+```{r}
+plot(return4)
+```
+
+相関係数行列
+
+```{r}
+cor(return4)
+```
+
+
+```{r message=FALSE}
+detach(return4)
+```
+
+
+
+## 2-3 統計的仮説検定について
+
+データ分析の前提条件
+- データが正規分布に従う
+- データが独立な標本である
+
+
+#### ShapiroWilkの検定
+
+データが正規分布に従っているかの検定
+
+```{r}
+# 旭硝子
+shapiro.test(return4$x5202) # 有意水準10%のとき棄却
+# ヤマハ
+shapiro.test(return4$x7272)
+# ポーラHD
+shapiro.test(return4$x4927)
+# 武田薬品
+shapiro.test(return4$x4502)
+```
+
+#### 連の検定（runstest）
+
+2値のデータの並びについて規則性の有無を確かめる（独立かどうかを調べる）検定
+
+```{r message=FALSE}
+library(tseries) # runs.testのライブラリ
+```
+
+```{r}
+# ２値データに変換
+# 旭硝子
+tmp <- as.factor(return4$x5202 < mean(return4$x5202))
+runs.test(tmp)
+
+# ヤマハ
+tmp <- as.factor(return4$x7272 < mean(return4$x7272))
+runs.test(tmp)
+
+# ポーラHD
+tmp <- as.factor(return4$x4927 < mean(return4$x4927)) # 有意水準10%で独立ではない
+runs.test(tmp)
+
+# 武田薬品
+tmp <- as.factor(return4$x4502 < mean(return4$x4502))
+runs.test(tmp)
 ```
 

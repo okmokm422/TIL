@@ -71,6 +71,16 @@ row_limiting_clause
 
 row_limiting_clauseはORDER BY句の後に記述
 
+　OFFSET スキップする行数 { ROW | ROWS }
+
+　FETCH { FIRST | NEXT }
+　{ 返される行数 | 返される行の割合 PERCENT }
+　{ ROW | ROWS }
+　{ ONLY | WITH TIES }
+
+FIRST | NEXT | ROW | ROWS →　省略不可
+WITH TIES →　ORDER BY 必須
+
 */
 SELECT prod_name, list_price FROM new_products 
 ORDER BY list_price 
@@ -78,7 +88,25 @@ OFFSET 3 ROWS
 FETCH NEXT 5 ROWS WITH TIES;
 
 
-
 -- データベースに登録されている文字データは大文字/小文字が区別される
 
 
+/*
+SQL*PlusやSQL Developerなどのツールでは、置換変数を利用できる。
+通常「&置換変数」はSQL文実行後に変数の値が破棄されるが、
+DEFINEで定義したdate変数は、セッションを切断もしくはUNDEFINEコマンドで破棄するまで値が保持される。
+
+Oracleの予約語であっても、SQL*Plusの変数名として使用できる。
+
+&置換変数
+SQL文実行後に変数の値が破棄される
+
+&&置換変数
+セッションを切断もしくはUNDEFINEコマンドで破棄するまで値が保持される
+
+DEFINE 変数名
+変数に設定されている値を表示
+
+UNDEFINE 変数名
+変数に設定されている値を破棄
+*/
