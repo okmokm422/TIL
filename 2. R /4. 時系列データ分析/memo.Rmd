@@ -31,6 +31,7 @@ output: html_notebook
 
 # Chapter2 時系列データの観察と要約
 
+## 2-1 時系列データを観察する
 
 ```{r message=FALSE}
 library(dplyr)
@@ -95,13 +96,15 @@ plot(diff(log(x7272))*100,type="l",main="ヤマハ",xlab="Time",ylab="x7272",yli
 plot(diff(log(x4502))*100,type="l",main="武田薬品",xlab="Time",ylab="x4502",ylim=range(diff(log(price4$x5202))*100))
 ```
 
-## 2-1 時系列データの分布と要約
+## 2-2 時系列データの分布と要約
 
-株価や収益率などの金融データでは、同一条件のもとのデータの数を増やすことは困難
-→　同一条件のもとでのデータということにする
+- 株価や収益率などの金融データでは、同一条件のもとのデータの数を増やすことは困難  
+  →　同一条件のもとでのデータということにする
 
 
-### 平均収益率とボラティリティ(平均収益率の標準偏差)
+#### 平均収益率とボラティリティ(平均収益率の標準偏差)
+
+- 平均収益率、標準偏差が同じ　＝　同じ母集団？
 
 ```{r  message=FALSE}
 attach(return4)
@@ -140,7 +143,7 @@ hist(x7272, main="ヤマハ", breaks = -10:20)
 hist(x4502, main="武田薬品", breaks = -10:20)
 ```
 
-### 相関関係を確認
+#### 相関関係を確認
 
 
 ```{r}
@@ -196,6 +199,7 @@ shapiro.test(return4$x4502)
 #### 連の検定（runstest）
 
 2値のデータの並びについて規則性の有無を確かめる（独立かどうかを調べる）検定
+収益率が平均を下回るか否かについて規則性があるか？
 
 ```{r message=FALSE}
 library(tseries) # runs.testのライブラリ
@@ -219,4 +223,159 @@ runs.test(tmp)
 tmp <- as.factor(return4$x4502 < mean(return4$x4502))
 runs.test(tmp)
 ```
+
+## 2-4 時間依存の発見
+
+- 収益率が同じような値を続けて取るような状況　＝　独立性を疑うべき
+
+
+- データの確認
+
+```{r}
+par(mfcol=c(2, 2))
+plot(X.price, type = "l")
+plot(X.return, type = "l")
+plot(Y.price, type="l")
+plot(Y.return, type="l")
+```
+
+- 収益率の挙動を深く読み取る
+
+```{r}
+# price上昇（下落）傾向　＝　return上昇（下落）傾向
+par(mfcol=c(2, 1))
+plot(X.price, type = "l")
+plot(X.return, type = "l")
+abline(h = 0, lty = 3) # ドット線分
+```
+
+```{r}
+# 傾向は観測されない
+par(mfcol=c(2, 1))
+plot(Y.price, type = "l")
+plot(Y.return, type = "l")
+abline(h = 0, lty = 3) # ドット線分
+```
+
+
+- XとYの平均と標準偏差
+
+```{r}
+print("X.return")
+mean(X.return)
+sd(X.return)
+
+print("Y.return")
+mean(Y.return)
+sd(Y.return)
+```
+
+- XとYのヒストグラム
+
+```{r}
+par(mfcol=c(2,2))
+hist(X.return)
+hist(Y.return)
+hist(X.price)
+hist(Y.price)
+```
+
+
+#### 結論
+
+- XとYは時系列プロットだと差があるのに、ヒストグラム（独立に抽出された標本を前提）では差が現れない
+
+
+# Chapter3 時系列データの時間依存と自己回帰モデル
+
+## 3-1 時間依存の表現 
+
+```{r}
+par(family = "HiraKakuProN-W3", mfcol=c(1, 2))
+plot(x=X.return[1:99], y=X.return[2:100])
+title("縦軸にrt、横軸にrt－1とした散布図")
+plot(x=Y.return[1:99], y=Y.return[2:100])
+```
+
+- 自己相関係数  
+  時間差を考慮した自分自身との相関関係
+
+- ラグ１の自己相関係数
+```{r}
+print("Xの自己相関係数")
+cor(X.return[1:99], X.return[2:100])
+print("Yの自己相関係数")
+cor(Y.return[1:99], Y.return[2:100])
+```
+
+#### コレログラム
+
+
+- ラグが0から20までの自己相関係数
+```{r}
+acf(X.return, plot = F)
+```
+
+- コレログラム
+
+```{r}
+# 点線は自己相関係数が0である帰無仮説のもとでの95%信頼区間
+# 累積の相関関係であることに注意（6日前の収益率が当日の収益率に関係しているとはいえない）
+par(mai=c(1, 1, 1, 1))
+acf(X.return)
+```
+
+- 偏自己相関係数  
+  ラグ0と比較した、スタートをそろえた相関
+
+```{r}
+acf(X.return, plot=F, type="p")
+```
+
+```{r}
+par(mai=c(1, 1, 1, 1))
+acf(X.return,plot=T,type="p")
+```
+
+#### がLjungBox検定
+
+- LjungBox検定  
+  帰無仮説は「自己相関関係を有していない」
+
+```{r}
+# p値が低いので自己相関関係を有していると判断（帰無仮説が棄却され、対立仮説が採用される）
+Box.test(X.return, type="L")
+```
+
+```{r}
+# p値が高いので自己相関関係を有していない判断（帰無仮説を受容）
+Box.test(Y.return, type="L")
+```
+
+## 3-2 時系列データの性質　〜定常性について〜
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
