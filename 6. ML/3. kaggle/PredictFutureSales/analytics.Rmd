@@ -1,11 +1,11 @@
 ---
-title: "R Notebook"
+title: "Predict Future Sales"
 output: html_notebook
 ---
 
+- パッケージ読み込み
 
-
-```{r}
+```{r message=FALSE}
 library(dplyr)
 library(ggplot2)
 library(lubridate)
@@ -95,6 +95,7 @@ plot(x = df_sales_per_day$date, y = df_sales_per_day$total_sales,
 ```
 
 ```{r}
+# 月次売上データ
 df_sales_per_month <- df_sales %>%
                         arrange(date) %>%
                         group_by(year(date), month(date)) %>% 
@@ -141,7 +142,9 @@ par(mai=c(1, 1, 1, 1))
 acf(df_scaled$total_sales, type = "partial", lag.max = 24, main="ACF") 
 ```
 
-- データが独立＝相関がないを確認
+
+- ShapiroWilkの検定  
+  データが独立＝相関がないを確認
 
 ```{r}
 # データが正規分布かを確認
@@ -150,7 +153,9 @@ acf(df_scaled$total_sales, type = "partial", lag.max = 24, main="ACF")
 shapiro.test(df_sales_per_month$total_sales)
 ```
 
-- 自己相関関係を有するか確認
+
+- LjungBox検定  
+  自己相関関係を有するか確認
 
 ```{r}
 # 自己相関関係を有しているか →　LjungBox検定
@@ -160,12 +165,44 @@ Box.test(df_sales_per_month$total_sales, type = "L")
 ```
 
 
+- 弱定常性
+
+時系列データ分析を行う上で必要となる前提条件  
+
+1．$E(Rt)＝a$           平均が一定  
+2．$Var(Rt)＝0$         分散が一定  
+3．$Cov(Rt,Rt－h)＝h$   自己共分散がラグhのみに依存  
+  
+
+```{r}
+# 平均値
+mean(df_sales_per_month$total_sales)
+```
+
+```{r}
+# 分散・自己共分散
+acf(df_sales_per_month$total_sales, plot = "F", type = "covariance")
+```
 
 
+- 自己回帰モデルの導入
 
+$r_{t}＝μ＋φ_{1}r_{t－1}＋e_{t}$
 
+1．自己回帰係数 $φ_{1}$
+2．切片 $μ$
+3．イノベーションの分散 $σ_{2}$ (単回帰分析の残差項$ε$)
 
+```{r}
+# パラメーターの推定
+# aic  T：次数を自動選択　F：次数をorder.maxで指定
+# order.max　次数
+ar(x=df_sales_per_month$total_sales, aic = T, order.max = 3)
+```
 
+```{r}
+
+```
 
 
 
