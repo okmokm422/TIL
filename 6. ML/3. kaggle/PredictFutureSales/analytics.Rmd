@@ -139,7 +139,7 @@ plot(x = df_sales_scaled$total_sales[1:1033], y = df_sales_scaled$total_sales[2:
 ```{r}
 # 偏自己相関係数
 par(mai=c(1, 1, 1, 1))
-acf(df_scaled$total_sales, type = "partial", lag.max = 24, main="ACF") 
+acf(df_sales_per_month$total_sales, type = "partial", lag.max = 24, main="ACF") 
 ```
 
 
