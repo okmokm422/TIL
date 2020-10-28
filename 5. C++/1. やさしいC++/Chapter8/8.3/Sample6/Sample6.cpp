@@ -1,0 +1,34 @@
+#include <iostream>
+using namespace std;
+
+//誤ったswap関数の宣言
+void swap(int x, int y);
+
+int main()
+{
+    int num1 = 5;
+    int num2 = 10;
+
+    cout << "変数num1の値は" << num1 << "です。\n";
+    cout << "変数num2の値は" << num2 << "です。\n";
+    cout << "変数num1とnum2の値を交換します。\n";
+
+    swap(num1, num2);
+
+    cout << "変数num1の値は" << num1 << "です。\n";
+    cout << "変数num2の値は" << num2 << "です。\n";
+
+    return 0;
+}
+
+// 誤ったswap関数の定義
+// 実引数num1とnum2に影響がない書き方
+// メモリ位置を交換するだけ？
+void swap(int x, int y)
+{
+    int tmp;
+
+    tmp = x;
+    x = y;
+    y = tmp;
+}
