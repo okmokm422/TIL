@@ -1,4 +1,3 @@
-// ポインタにアドレスを格納する
 #include <iostream>
 using namespace std;
 
@@ -11,7 +10,7 @@ int main()
     pA = &a;
 
     cout << "変数aの値は" << a << "です。\n";
-    cout << "変数aのアドレスは" << &a << "です。\n";
+    cout << "変数aのアドレス(&a)は" << &a << "です。\n";
     cout << "ポインタpAの値は" << pA << "です。\n";
 
     return 0;

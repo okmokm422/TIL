@@ -1,12 +1,12 @@
 # 基本用語
-|||
+|用語|意味|
 |:---|:---|
-|BIOS（Basic I/O System）|最もハードウェアに近い部分を司るシステム。<br>マザーボードや拡張カードに搭載されたフラッシュROMに書き込まれている。<br>・日付と時刻<br>・電源管理<br>・起動デバイスの優先順位<br>・組み込みデバイスの有効/無効化<br>|
+|BIOS（Basic I/O System）|最もハードウェアに近い部分を司るシステム。<br>マザーボードや拡張カードに搭載されたフラッシュROMに書き込まれている。<br>【機能】<br>1. 記憶装置（HDD）等に対する最低限の認識<br>2. デバイスのブート用の特殊領域（MBR）を読み込み<br>3. ブートローダに制御を移す<br>【設定可能項目】<br>・日付と時刻<br>・電源管理<br>・起動デバイスの優先順位<br>・組み込みデバイスの有効/無効化|
 |カーネルモジュール|カーネルで組み込まれる機能のプログラム部品。カーネルから独立している。|
 |I/Oポートアドレス|周辺機器(デバイス)とCPUがデータをやり取りする際に使用する16ビットのアドレス|
 |SCSIデバイス||
 |D-Bus（Desktop Bus）|プログラム同士が情報を伝達するプロセス間通信機構|
-|[TA(ターミナルアダプタ)](https://wa3.i-3-i.info/word12215.html)|データをISDN回線の中を通れる形に変換する機器|
+|TA(ターミナルアダプタ)|データをISDN回線の中を通れる形に変換する機器|
 |ホットプラグデバイス|電源を入れたままの接続・取り外しに対応。プラグアンドプレイデバイスともいう。|
 |コールドプラグデバイス|システムが停止している状態でのみデバイスの差し替えができるデバイス。|
 |DMA|CPUを介さずに周辺機器やメインメモリ（RAM）などの間で直接データ転送を行う方式|
@@ -18,12 +18,36 @@
 # コマンド
 |コマンド|意味|同義|
 |:---|:---|:---|
-|modprobe|依存関係を考慮してカーネルモジュールをロードまたはアンロード||
+|dmesg|システム起動時に出力されたメッセージを確認|journalctl --dmesg/journalctl -k|
+|dmesg --clear|手動でリングバッファの内容をクリアする。rootユーザで実行。|
+|modprobe|依存関係を考慮してカーネルモジュールをロードまたはアンロード|-|
 |lsmod|ロードされているカーネルモジュールの情報|cat /proc/modules|
 |lsusb|接続されたUSBデバイスの情報を表示|cat /proc/bus/usb/devices|
-|lspci|||
-||||
-||||
+|lscpu|CPUの情報を表示するコマンド|cat /proc/cpu|
+|lspci|CPUの情報を表示するコマンド|cat /proc/bus/pci/devices|
+|journalctl|systemdが管理するジャーナル（システムログ）を参照|-|
+|journalctl --dmesg|systemdが管理するジャーナル（システムログ）を参照|-|
+|journalctl -k|systemdが管理するジャーナル（システムログ）を参照|-|
+|systemctl サブコマンド [ Unit名 ]|各サービスの稼働状況や起動設定を管理する|-|
+|systemctl start|サービスを手動起動|-|
+|systemctl stop|サービスを手動停止|-|
+|systemctl set-default|次回起動時のターゲットを指定|-|
+|systemctl restart|サービスを再起動|-|
+|systemctl reload|サービスに設定ファイルを再読み込みさせる|-|
+|systemctl reboot|システムを再起動させる|-|
+|systemctl rescue|レスキューモードに入る|-|
+|systemctl status|サービスの稼働状況|-|
+|systemctl is-active|サービスが稼働しているかどうかを確認|-|
+|systemctl enable|サービスの自動起動を有効にする|-|
+|systemctl disable|サービスの自動起動を無効にする|-|
+|systemctl default|デフォルトのモードにする|-|
+|systemctl halt|システムを停止|-|
+|systemctl poweroff|システムを停止|-|
+|systemctl list-unit-files|すべてのUnitを表示|-|
+|shutdown [オプション] 時間 [メッセージ]|時間（HH:MM）やM分後（+M）にshutdown||
+|shutdown -h|シャットダウンする|-|
+|shutdown -r|シャットダウン後にシステムを再起動する|-|
+|shutdown -k|メッセージ通知のみを行う|-|
 ||||
 
 <br>
@@ -32,25 +56,30 @@
 # ファイルシステム
 |path|内容|確認方法|
 |:---|:---|:---|
-|/home|ユーザーごとのホームディレクトリ||
-|/etc|システムやアプリケーションの設定情報||
-|/bin|基本的なコマンドが配置 ||
-|/sbin|システム管理に必須のコマンドが配置||
-|/proc|プロセス、ハードウェアおよびシステムリソースなどの情報を扱うための仮想的なファイルシステム||
+|/home|ユーザーごとのホームディレクトリ|-|
+|/etc|システムやアプリケーションの設定情報|-|
+|/etc/inittab|-|-|
+|/bin|基本的なコマンドが配置 |-|
+|/sbin|システム管理に必須のコマンドが配置|-|
+|/proc|プロセス、ハードウェアおよびシステムリソースなどの情報を扱うための仮想的なファイルシステム|-|
 |/proc/bus/pci/devices|PCIデバイス|cat/lspci|
 |/proc/bus/usb/devices|接続されたUSBデバイスの情報|cat/lsusb|
-|/proc/cpuinfo|CPUに関する情報||
-|/proc/dma|使用中のDMAチャネルに関する情報||
-|/proc/interrups|IRQ||
-|/proc/ioports|I/Oポートアドレス||
-|/proc/memoinfo|メモリ||
-|/proc/modules|ロードされているカーネルモジュール||
-|/proc/scsi/scsi|SCSIデバイス||
-|/sys|デバイスが接続されるとデバイス情報が作成される||
-|/dev|ハードウェアのアクセスを抽象化したファイルであるデバイスファイルを格納。/sysの更新をudevが察知し、デバイスファイルが作成される。||
-|/etc/udev/rules.d|デバイスファイル作成時に使う設定ファイル（.rules）が配置。||
-|/etc/modprobe.d/|modprobeの設定ファイル（*.conf）が配置。||
-
+|/proc/cmdline|ブートローダからカーネルに渡されたパラメータ||
+|/proc/cpuinfo|CPUに関する情報|cat/lscpu|
+|/proc/dma|使用中のDMAチャネルに関する情報|-|
+|/proc/interrups|IRQ(Interrupt ReQuest)（マウスやキーボードなどの周辺機器(デバイス)からCPUへの割り込み要求）|-|
+|/proc/ioports|I/Oポートアドレス|-|
+|/proc/memoinfo|メモリ|-|
+|/proc/modules|ロードされているカーネルモジュール|-|
+|/proc/scsi/scsi|SCSIデバイス|-|
+|/sys|デバイスが接続されるとデバイス情報が作成される|-|
+|/dev|ハードウェアのアクセスを抽象化したファイルであるデバイスファイルを格納。/sysの更新をudevが察知し、デバイスファイルが作成される。|-|
+|/etc/udev/rules.d|デバイスファイル作成時に使う設定ファイル（.rules）が配置。|-|
+|/etc/modprobe.d/\*myconfig.conf|modprobeの設定ファイル（*.conf）が配置。|-|
+|/var/log/messages|Linuxでメインで使用されるログファイル|
+|/var/log/secur|セキュリティに関するログ|
+|/var/log/maillog|メールに関するログ|
+|systemd-journald|systemdから起動したプロセスの標準出力やsyslogへのログメッセージをバイナリ形式で記録|-|
 
 <br>
 <br>
@@ -58,7 +87,7 @@
 # 大容量記憶装置（ストレージ）
 |名称|フラッシュメモリ<br>（不揮発性）|
 |:---|:---|:---|
-|HDD（Hard Disk Drive）||
+|HDD（Hard Disk Drive）|-|
 |USBフラッシュドライブ|○|
 |SSD（Solid State Drive）|○|
 
@@ -69,9 +98,9 @@
 
 |名称|例|
 |---|---|
-|通信デバイス|NICカード、モデム
-|USBデバイス||
-|SCSI（スカジー）デバイス||
+|通信デバイス|NICカード、モデム|
+|USBデバイス|USB|
+|SCSI（スカジー）デバイス|-|
 
 <br>
 <br>
@@ -81,23 +110,21 @@
 |:---|:---|
 |ACM Communication Device Class|モデム、TA(ターミナルアダプタ)|
 |Audio Class|スピーカー、マイク|
-|HID(Human Interface Device)|
+|HID(Human Interface Device)|キーボード、マウス|
 |Mass Storage Class|ハードディスク、USBメモリー|
-
 
 <br>
 <br>
 
 # modprobeの設定ファイル
 
-
 |名称|意味|
-|:---|:---|:---|
-|options||
-|alias||
-|install||
-|remove||
-|blacklist||
+|:---|:---|
+|options|各カーネルモジュールのデフォルトパラメータを指定|
+|alias|カーネルモジュールに別名をつける|
+|install|特定のカーネルモジュールのロード時に実行されるコマンドを指定|
+|remove|特定のカーネルモジュールのアンロード時に実行されるコマンドを指定|
+|blacklist|ロードしたくないカーネルモジュールを指定|
 
 <br>
 <br>
@@ -116,5 +143,51 @@
 <br>
 <br>
 
-# lspciコマンドで取得できる情報
+# Linuxの起動システム
 
+|||SysVinit|Upstart|systemd|
+|:---|:---|:---|:---|:---|
+|起動プロセス|名称|initプロセス|-|systemdプロセス|
+|^|場所|/sbin/init/|-|-|
+|^|設定ファイル|/etc/inittab|-|-|
+|起動方法||並列起動|並列起動|順次起動|
+|実行順序|start|-|-|/etc/systemd/system/default.target|
+|プロセス管理||PID|-|cgroups<br>（カーネルの機能）|
+|最初に起動されるプロセスの番号||1|-|-|
+|処理単位|名称|-|job<br>task|Unit<br>※シンボリックリンクの設定ファイル|
+|^|種類|-|-|service<br>device<br>mount<br>swap<br>target<br>timer|
+|サービスの管理コマンド|メインコマンド|-|-|systemctl|
+|^|サブコマンド|-|-|start：起動<br>is-active：稼働有無<br>enable：自動起動<br>|
+|ログを扱うデーモンプロセス|名称|-|-|systemd-journald|
+|^|コマンド|-|-|journalctl<br>※cat不可|
+|ランレベル|種類|【Red Hat/CentOS】<br>0 停止<br>1,S,s シングルユーザー <br>2,3,5 マルチユーザー<br>4 未使用<br>6 再起動<br>【Ubuntu】<br>0 停止<br>1,S,s シングルユーザー<br>2~5 マルチユーザー<br>6 再起動<br>|-|0 poweroff.target<br>1 rescue.target|
+|^|確認|runrevel|-|-|
+|^|変更|init <br>telinit|-|-|
+
+
+/etc/init.d<br>各種サービスの起動に使うスクリプトが入っているディレクトリ
+/etc/rc<ランレベル>.d<br>各ランレベルで起動・終了するサービスのスクリプト
+
+
+# Linuxシステムが起動するまでの流れ
+
+1. BIOS/UEFIが起動
+2. BIOS/UEFIがハードウェアのチェック・初期化を行う
+3. 起動デバイスに書き込まれたブートローダを読み出す
+4. ブートローダに制御を移す
+5. ブートローダが起動デバイス上からカーネルと初期RAMディスクをメモリ上へ読み込む
+6. カーネルがメモリの初期化やシステムクロックの設定等を行う
+7. カーネルが仮のルートファイルシステム（initramfs：初期RAMディスク）をマウントする
+8. カーネルが最初のプロセスであるinit/systemdプロセスを実行する
+
+# UEFI/BIOS
+
+|||UEFI|BIOS|
+|:---|:---|:---|:---|
+|操作||GUI|CUI|
+|ESP（最初にアクセスされる領域）||/boot/efi|-|
+|パーティション|形式|GTP|-|
+|^|上限|9.4ZB|2.2TB|
+
+
+# 
