@@ -1,16 +1,21 @@
+# 参考
+
+ - [Linux - System Hardware](https://www.infraeye.com/study/linuxz1.html)
+
 # 基本用語
 |用語|意味|
 |:---|:---|
 |BIOS（Basic I/O System）|最もハードウェアに近い部分を司るシステム。<br>マザーボードや拡張カードに搭載されたフラッシュROMに書き込まれている。<br>【機能】<br>1. 記憶装置（HDD）等に対する最低限の認識<br>2. デバイスのブート用の特殊領域（MBR）を読み込み<br>3. ブートローダに制御を移す<br>【設定可能項目】<br>・日付と時刻<br>・電源管理<br>・起動デバイスの優先順位<br>・組み込みデバイスの有効/無効化|
 |カーネルモジュール|カーネルで組み込まれる機能のプログラム部品。カーネルから独立している。|
 |I/Oポートアドレス|周辺機器(デバイス)とCPUがデータをやり取りする際に使用する16ビットのアドレス|
-|SCSIデバイス||
+|SCSIデバイス（スカジー）|コンピュータと周辺機器を接続するためのインターフェイス|
 |D-Bus（Desktop Bus）|プログラム同士が情報を伝達するプロセス間通信機構|
 |TA(ターミナルアダプタ)|データをISDN回線の中を通れる形に変換する機器|
 |ホットプラグデバイス|電源を入れたままの接続・取り外しに対応。プラグアンドプレイデバイスともいう。|
 |コールドプラグデバイス|システムが停止している状態でのみデバイスの差し替えができるデバイス。|
 |DMA|CPUを介さずに周辺機器やメインメモリ（RAM）などの間で直接データ転送を行う方式|
 |DMAチャネル|DMA転送で使う通信経路|
+|SATAインターフェース|HDDの仕様規格で主流なもの。単線で連続（シリアル）転送。|
 
 <br>
 <br>
@@ -23,8 +28,8 @@
 |modprobe|依存関係を考慮してカーネルモジュールをロードまたはアンロード|-|
 |lsmod|ロードされているカーネルモジュールの情報|cat /proc/modules|
 |lsusb|接続されたUSBデバイスの情報を表示|cat /proc/bus/usb/devices|
-|lscpu|CPUの情報を表示するコマンド|cat /proc/cpu|
-|lspci|CPUの情報を表示するコマンド|cat /proc/bus/pci/devices|
+|lscpu|CPUの情報を表示|cat /proc/cpu|
+|lspci|PCIデバイスの情報を表示<br>・PCI識別番号<br>・PCIデバイスの種類<br>・ベンダー名（ベンダーID）<br>・デバイス名<br>・バスの速度<br>・IRQ番号<br>・I/Oポートアドレス|cat /proc/bus/pci/devices|
 |journalctl|systemdが管理するジャーナル（システムログ）を参照|-|
 |journalctl --dmesg|systemdが管理するジャーナル（システムログ）を参照|-|
 |journalctl -k|systemdが管理するジャーナル（システムログ）を参照|-|
@@ -75,7 +80,7 @@
 |/sys|デバイスが接続されるとデバイス情報が作成される|-|
 |/dev|ハードウェアのアクセスを抽象化したファイルであるデバイスファイルを格納。/sysの更新をudevが察知し、デバイスファイルが作成される。|-|
 |/etc/udev/rules.d|デバイスファイル作成時に使う設定ファイル（.rules）が配置。|-|
-|/etc/modprobe.d/\*myconfig.conf|modprobeの設定ファイル（*.conf）が配置。|-|
+|/etc/modprobe.d/\*.conf|modprobeの設定ファイル（*.conf）が配置。|-|
 |/var/log/messages|Linuxでメインで使用されるログファイル|
 |/var/log/secur|セキュリティに関するログ|
 |/var/log/maillog|メールに関するログ|
