@@ -6,6 +6,7 @@
 |用語|意味|
 |:---|:---|
 |BIOS（Basic I/O System）|最もハードウェアに近い部分を司るシステム。<br>マザーボードや拡張カードに搭載されたフラッシュROMに書き込まれている。<br>【機能】<br>1. 記憶装置（HDD）等に対する最低限の認識<br>2. デバイスのブート用の特殊領域（MBR）を読み込み<br>3. ブートローダに制御を移す<br>【設定可能項目】<br>・日付と時刻<br>・電源管理<br>・起動デバイスの優先順位<br>・組み込みデバイスの有効/無効化|
+|UEFI(Unified Extensible Firmware Interface)|・IntelがBIOS（Basic I/O System）を置き換えるために考案したEFIの統一仕様<br>・GUIでの操作をサポート<br>・ESP（EFIシステムパーティション）（UEFIシステムにおいて、物理的なマシンを起動し、ファームウエアが読み込まれた後、その後の起動シーケンスで最初にアクセスされる領域）は/boot/efiにマウントされる<br>・GPT（GUID Partition Table）というパーティション形式のHDDからの起動に対応しており、3TB以上のHDDからの起動をサポートしている。<br>|
 |カーネルモジュール|カーネルで組み込まれる機能のプログラム部品。カーネルから独立している。|
 |I/Oポートアドレス|周辺機器(デバイス)とCPUがデータをやり取りする際に使用する16ビットのアドレス|
 |SCSIデバイス（スカジー）|コンピュータと周辺機器を接続するためのインターフェイス|
@@ -23,16 +24,15 @@
 # コマンド
 |コマンド|意味|同義|
 |:---|:---|:---|
-|dmesg|システム起動時に出力されたメッセージを確認|journalctl --dmesg/journalctl -k|
+|dmesg||システム起動時に出力されたメッセージを確認journalctl --dmesg/journalctl -k|
 |dmesg --clear|手動でリングバッファの内容をクリアする。rootユーザで実行。|
 |modprobe|依存関係を考慮してカーネルモジュールをロードまたはアンロード|-|
 |lsmod|ロードされているカーネルモジュールの情報|cat /proc/modules|
 |lsusb|接続されたUSBデバイスの情報を表示|cat /proc/bus/usb/devices|
 |lscpu|CPUの情報を表示|cat /proc/cpu|
 |lspci|PCIデバイスの情報を表示<br>・PCI識別番号<br>・PCIデバイスの種類<br>・ベンダー名（ベンダーID）<br>・デバイス名<br>・バスの速度<br>・IRQ番号<br>・I/Oポートアドレス|cat /proc/bus/pci/devices|
-|journalctl|systemdが管理するジャーナル（システムログ）を参照|-|
-|journalctl --dmesg|systemdが管理するジャーナル（システムログ）を参照|-|
-|journalctl -k|systemdが管理するジャーナル（システムログ）を参照|-|
+|journalctl --dmesg|systemdが管理するシステム起動時に出力されたメッセージを確認|dmesg|
+|journalctl -k|systemdが管理するシステム起動時に出力されたメッセージを確認|dmesg|
 |systemctl サブコマンド [ Unit名 ]|各サービスの稼働状況や起動設定を管理する|-|
 |systemctl start|サービスを手動起動|-|
 |systemctl stop|サービスを手動停止|-|
@@ -82,7 +82,7 @@
 |/etc/udev/rules.d|デバイスファイル作成時に使う設定ファイル（.rules）が配置。|-|
 |/etc/modprobe.d/\*.conf|modprobeの設定ファイル（*.conf）が配置。|-|
 |/var/log/messages|Linuxでメインで使用されるログファイル|
-|/var/log/secur|セキュリティに関するログ|
+|/var/log/secure|セキュリティに関するログ|
 |/var/log/maillog|メールに関するログ|
 |systemd-journald|systemdから起動したプロセスの標準出力やsyslogへのログメッセージをバイナリ形式で記録|-|
 
@@ -91,7 +91,7 @@
 
 # 大容量記憶装置（ストレージ）
 |名称|フラッシュメモリ<br>（不揮発性）|
-|:---|:---|:---|
+|:---|:---|
 |HDD（Hard Disk Drive）|-|
 |USBフラッシュドライブ|○|
 |SSD（Solid State Drive）|○|
@@ -155,16 +155,15 @@
 |起動プロセス|名称|initプロセス|-|systemdプロセス|
 |^|場所|/sbin/init/|-|-|
 |^|設定ファイル|/etc/inittab|-|-|
-|起動方法||並列起動|並列起動|順次起動|
-|実行順序|start|-|-|/etc/systemd/system/default.target|
+|起動方法||順次起動|並列起動|並列起動|
+|実行順序|最初に実行|-|-|/etc/systemd/system/default.target|
 |プロセス管理||PID|-|cgroups<br>（カーネルの機能）|
-|最初に起動されるプロセスの番号||1|-|-|
-|処理単位|名称|-|job<br>task|Unit<br>※シンボリックリンクの設定ファイル|
-|^|種類|-|-|service<br>device<br>mount<br>swap<br>target<br>timer|
-|サービスの管理コマンド|メインコマンド|-|-|systemctl|
-|^|サブコマンド|-|-|start：起動<br>is-active：稼働有無<br>enable：自動起動<br>|
-|ログを扱うデーモンプロセス|名称|-|-|systemd-journald|
-|^|コマンド|-|-|journalctl<br>※cat不可|
+|起動プロセスの番号||1|-|-|
+|管理単位|名称|-|job|Unit<br>※設定ファイル|
+|^|種類|-|-|service　サービスを起動<br>device　デバイスを表す<br>mount　ファイルシステムをマウントする<br>swap　スワップ領域を有効にする<br>target　複数のUnitをグループ化する<br>timer　指定した日時や間隔で処理を実行する|
+|サービスの管理コマンド||-|initctl|systemctl サブコマンド unit名|
+|ログの管理|名称|-|-|systemd-journald|
+|^|表示コマンド|-|-|journalctl<br>※cat不可|
 |ランレベル|種類|【Red Hat/CentOS】<br>0 停止<br>1,S,s シングルユーザー <br>2,3,5 マルチユーザー<br>4 未使用<br>6 再起動<br>【Ubuntu】<br>0 停止<br>1,S,s シングルユーザー<br>2~5 マルチユーザー<br>6 再起動<br>|-|0 poweroff.target<br>1 rescue.target|
 |^|確認|runrevel|-|-|
 |^|変更|init <br>telinit|-|-|

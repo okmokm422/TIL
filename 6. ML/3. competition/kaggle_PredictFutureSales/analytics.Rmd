@@ -1,0 +1,226 @@
+---
+title: "Predict Future Sales"
+output: html_notebook
+---
+
+- パッケージ読み込み
+
+```{r message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(corrplot)
+```
+
+
+```{r}
+# データフレーム読み込み
+df_sales_train = read.csv("competitive-data-science-predict-future-sales/sales_train.csv")
+df_items = read.csv("competitive-data-science-predict-future-sales/items.csv")
+```
+
+```{r}
+df_sales_train %>% head()
+```
+
+```{r}
+df_sales_train %>% head()
+```
+
+```{r}
+df_items %>% head()
+```
+
+```{r}
+df_items %>% dim()
+```
+
+```{r}
+# sales_trainとitemを結合（itemカテゴリーを追加）
+df_sales <- df_sales_train %>% left_join(df_items, by=c("item_id"))
+df_sales <- df_sales[, colnames(df_sales) != "item_name"]
+df_sales %>% head()
+```
+
+```{r}
+# 使わないdfを削除
+rm(df_sales_train)
+rm(df_items)
+```
+
+```{r}
+str(df_sales)
+```
+
+```{r}
+# date列をdate型（day month year）に変換
+df_sales$date <- dmy(df_sales$date)
+```
+
+```{r}
+df_sales %>% head()
+```
+
+```{r}
+df_sales %>% summary()
+```
+
+```{r}
+num_cols <- sapply(df_sales, is.numeric)
+df_numcols <- df_sales[, num_cols]
+df_numcols
+```
+
+```{r}
+corr <- cor(df_numcols)
+corrplot(corr, method="number",tl.col="black", tl.srt=45)
+```
+
+
+```{r}
+# 日付ごとの全売上
+df_sales_per_day <- df_sales %>%
+                                arrange(date) %>%
+                                group_by(date) %>% 
+                                summarise(item_price=mean(item_price), item_cnt_day=sum(item_cnt_day)) %>% 
+                                mutate(total_sales = item_price * item_cnt_day)
+df_sales_per_day %>% head()
+```
+
+```{r}
+plot(x = df_sales_per_day$date, y = df_sales_per_day$total_sales, 
+     type="l", 
+     ylim = range(df_sales_per_day$total_sales),
+     xlab = "Date", ylab = "Total Sales per day")
+```
+
+```{r}
+# 月次売上データ
+df_sales_per_month <- df_sales %>%
+                        arrange(date) %>%
+                        group_by(year(date), month(date)) %>% 
+                        summarise(date=min(date), item_price=mean(item_price), item_cnt_day=sum(item_cnt_day)) %>% 
+                        mutate(total_sales = item_price * item_cnt_day)
+df_sales_per_month %>% head()
+```
+
+```{r}
+max(df_sales_per_month$date)
+```
+
+
+```{r}
+plot(x = df_sales_per_month$date, y = df_sales_per_month$total_sales, 
+     type="l", 
+     ylim = range(df_sales_per_month$total_sales),
+     xlab = "Date", ylab = "Total Sales per month", 
+     xaxt = "n", yaxt="n")
+axis.Date(1,at=seq(min(df_sales_per_month$date), as.Date("2015-12-1"), "month"), format="%Y%m")
+```
+
+```{r}
+df_sales_scaled <- df_sales_per_day
+df_sales_scaled$total_sales <- df_sales_scaled$total_sales %>% scale()
+df_sales_scaled %>% head()
+```
+
+```{r}
+df_sales_scaled %>% dim()
+```
+
+
+```{r}
+# 時系列性があるか
+plot(x = df_sales_scaled$total_sales[1:1033], y = df_sales_scaled$total_sales[2:1034],
+     xlab = "Lag 1day Sales", ylab = "Sales",
+     xlim = c(-1, 1), ylim = c(-1, 1))
+```
+
+```{r}
+# 偏自己相関係数
+par(mai=c(1, 1, 1, 1))
+acf(df_sales_per_month$total_sales, type = "partial", lag.max = 24, main="ACF") 
+```
+
+
+- ShapiroWilkの検定  
+  データが独立＝相関がないを確認
+
+```{r}
+# データが正規分布かを確認
+# 帰無仮説：対象データが正規分布に従う
+# p値が小さい　→　有意水準10%で正規分布ではない
+shapiro.test(df_sales_per_month$total_sales)
+```
+
+
+- LjungBox検定  
+  自己相関関係を有するか確認
+
+```{r}
+# 自己相関関係を有しているか →　LjungBox検定
+# 帰無仮説：自己相関関係を有していない
+# p値が小さい　→　有意水準10%で自己相関関係を有している
+Box.test(df_sales_per_month$total_sales, type = "L") 
+```
+
+
+- 弱定常性
+
+時系列データ分析を行う上で必要となる前提条件  
+
+1．$E(Rt)＝a$           平均が一定  
+2．$Var(Rt)＝0$         分散が一定  
+3．$Cov(Rt,Rt－h)＝h$   自己共分散がラグhのみに依存  
+  
+
+```{r}
+# 平均値
+mean(df_sales_per_month$total_sales)
+```
+
+```{r}
+# 分散・自己共分散
+acf(df_sales_per_month$total_sales, plot = "F", type = "covariance")
+```
+
+
+- 自己回帰モデルの導入
+
+$r_{t}＝μ＋φ_{1}r_{t－1}＋e_{t}$
+
+1．自己回帰係数 $φ_{1}$
+2．切片 $μ$
+3．イノベーションの分散 $σ_{2}$ (単回帰分析の残差項$ε$)
+
+```{r}
+# パラメーターの推定
+# aic  T：次数を自動選択　F：次数をorder.maxで指定
+# order.max　次数
+ar(x=df_sales_per_month$total_sales, aic = T, order.max = 3)
+```
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
