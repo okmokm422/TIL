@@ -1,6 +1,7 @@
 #### 要復習問題
 
 1,4,10,13,14,20,21,23,26,27,34
+40,43,44,45,46,51,52,53,59,61,63,66,69,70,72,73,74
 
 #### 回答
 
@@ -91,30 +92,54 @@
 51. d (c?)
 - SQL1999構文とOracle構文にパフォーマンスの違いはない
 52. b?
-53. 
+53. ✗ b, c
+- 結合方法の問題
 54. d, f
 55. a, e
 56. b
 57. d
 58. a
-59. b, c, f
+59. b, c, f? 
+- 明示的なCOMMIT文とROLLBACK文の他にDDL文の実行でもトランザクションは完結する
+- DML  
+    SELECT, INSERT, UPDATE, DELETE, MERGE
+- DDL  
+    CREATE, ALTER, DROP, RENAME, TRUNCATE, COMMENT
 60. c
 61. a?
+- INSERT文の表名の代わりに副問合せ、VALUESに副問合せを指定できる
+- 副問合せの結果を列名には指定できない
 62. a
-63. ?
+63. ? ✗d
+- PRIMARY KEY制約は表作成時、作成後に定義できる。
+- 表作成後にPRIMARY KEY制約を追加する場合には、すでに登録されているデータにNULL値、重複値があってはならない
 64. c
 65. d
+- CHECK　疑似列の参照、SYSDATE関数の呼び出しはできない
+- DEFAULTに　疑似列（12c~）、SYSDATEはOK
 66. c?
+- CLOB　最大4G、列の定義時にサイズを指定するとエラー
 67. c, e
 68. b
 69. c?, d
-70. e, f
+- NOT NULL制約と複合列の制約以外はすべて、列レベルと表レベルで定義できる
+70. e, f ✗ d, f
+- ALTER TABLE 表名 SET UNUSED (列名[, 列名]);　ALTER TABLE 表名 SET UNUSED COLUMN(列名);
+- ALTER TABLE 表名 DROP UNUSED COLUMNS;
+- 制約、索引は削除／ビューは自動で修正されない／シノニムの再作成は必要ない
 71. c
-72. ?
+- ALTER TABLE 表名 MODIFY (列名[, データ型])
+72. ? ✗ b, d
+- 別の表から参照されている主キー  
+    - 外部キー制約を削除
+    - ALTER TABLE 表名 DROP 文でCASCADE CONSTRAINTS句を指定
 73. a, c, d(b?)
-74. b, c
+- LONG型  
+    UNIQUE制約、GROUP BY、ORDER BY使えない
+74. b, c ✗a, c
+- ALTERはDDL
 75. d
 
 ------
 
-60min ✗
+60min ✗8

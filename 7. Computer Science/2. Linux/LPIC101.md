@@ -17,6 +17,8 @@
 |DMA|CPUを介さずに周辺機器やメインメモリ（RAM）などの間で直接データ転送を行う方式|
 |DMAチャネル|DMA転送で使う通信経路|
 |SATAインターフェース|HDDの仕様規格で主流なもの。単線で連続（シリアル）転送。|
+|ACPI（Advanced Configuration and Power Interface）|コンピュータの電源管理や構成に関する規格 <br>OS上でシャットダウンや再起動などを行う際の命令は、ACPIイベントとして通知される<br>|
+|acpidデーモン|ACPIイベントを監視し、イベントに対応する処理を実行|
 
 <br>
 <br>
@@ -24,36 +26,50 @@
 # コマンド
 |コマンド|意味|同義|
 |:---|:---|:---|
-|dmesg||システム起動時に出力されたメッセージを確認journalctl --dmesg/journalctl -k|
-|dmesg --clear|手動でリングバッファの内容をクリアする。rootユーザで実行。|
-|modprobe|依存関係を考慮してカーネルモジュールをロードまたはアンロード|-|
+|dmesg|システム起動時に出力されたメッセージを確認|journalctl --dmesg/journalctl -k|
+|dmesg --clear|手動でリングバッファ（一時的にデータを溜めておく記憶場所）の内容をクリアする。rootユーザで実行。|
+|modprobe|依存関係を考慮してカーネルモジュールをロードまたはアンロード|
 |lsmod|ロードされているカーネルモジュールの情報|cat /proc/modules|
 |lsusb|接続されたUSBデバイスの情報を表示|cat /proc/bus/usb/devices|
 |lscpu|CPUの情報を表示|cat /proc/cpu|
 |lspci|PCIデバイスの情報を表示<br>・PCI識別番号<br>・PCIデバイスの種類<br>・ベンダー名（ベンダーID）<br>・デバイス名<br>・バスの速度<br>・IRQ番号<br>・I/Oポートアドレス|cat /proc/bus/pci/devices|
 |journalctl --dmesg|systemdが管理するシステム起動時に出力されたメッセージを確認|dmesg|
 |journalctl -k|systemdが管理するシステム起動時に出力されたメッセージを確認|dmesg|
-|systemctl サブコマンド [ Unit名 ]|各サービスの稼働状況や起動設定を管理する|-|
-|systemctl start|サービスを手動起動|-|
-|systemctl stop|サービスを手動停止|-|
-|systemctl set-default|次回起動時のターゲットを指定|-|
-|systemctl restart|サービスを再起動|-|
-|systemctl reload|サービスに設定ファイルを再読み込みさせる|-|
-|systemctl reboot|システムを再起動させる|-|
-|systemctl rescue|レスキューモードに入る|-|
-|systemctl status|サービスの稼働状況|-|
-|systemctl is-active|サービスが稼働しているかどうかを確認|-|
-|systemctl enable|サービスの自動起動を有効にする|-|
-|systemctl disable|サービスの自動起動を無効にする|-|
-|systemctl default|デフォルトのモードにする|-|
-|systemctl halt|システムを停止|-|
-|systemctl poweroff|システムを停止|-|
-|systemctl list-unit-files|すべてのUnitを表示|-|
+|systemctl サブコマンド [ Unit名 ]|各サービスの稼働状況や起動設定を管理する|
+|systemctl start|サービスを手動起動|
+|systemctl stop|サービスを手動停止|
+|systemctl set-default ターゲット名|次回起動時のターゲットを指定|
+|systemctl restart|サービスを再起動|
+|systemctl reload|サービスに設定ファイルを再読み込みさせる|
+|systemctl reboot|システムを再起動させる|
+|systemctl rescue|レスキューモード（ランレベル１）に入る|
+|systemctl status|サービスの稼働状況|
+|systemctl is-active|サービスが稼働しているかどうかを確認|
+|systemctl enable|サービスの自動起動を有効にする|
+|systemctl disable|サービスの自動起動を無効にする|
+|systemctl default|デフォルトのモードにする|
+|systemctl get-default ターゲット名|systemdで次回起動時のターゲットを確認||
+|systemctl halt|システムを停止|
+|systemctl poweroff|システムを停止|
+|systemctl list-unit-files|すべてのUnitを表示|
 |shutdown [オプション] 時間 [メッセージ]|時間（HH:MM）やM分後（+M）にshutdown||
-|shutdown -h|シャットダウンする|-|
-|shutdown -r|シャットダウン後にシステムを再起動する|-|
-|shutdown -k|メッセージ通知のみを行う|-|
-||||
+|shutdown -h|シャットダウンする|
+|shutdown -r|シャットダウン後にシステムを再起動する|
+|shutdown -k|メッセージ通知のみを行う|
+|shutdown -c|シャットダウンをキャンセルする|
+|reboot|システムを再起動するが、時間およびメッセージを指定することはできない|
+|init 6|ランレベルを6に変更しシステムを再起動||
+|telinit 6|ランレベルを6に変更しシステムを再起動||
+|shutdown -r now|システムを再起動||
+|shutdown -k |シャットダウン処理を行わず、メッセージ通知のみを行う||
+|systemctl reboot|システムを再起動||
+|systemctl start reboot.target|システムを再起動||
+|runlevel|現在および1つ前のランレベルを調べる||
+|init ランレベル|ランレベルを変更||
+|telinit ランレベル|ランレベルを変更||
+|init Q/q|「/etc/inittab」を再読み込みさせ即座に変更を反映||
+|telinit Q/q|「/etc/inittab」を再読み込みさせ即座に変更を反映||
+|wall|ログイン中の全ユーザーにメッセージを送信<br>CentOS7 : wall [-n] [ message ]<br>Ubuntu 14.04 : wall [ file ]||
 
 <br>
 <br>
@@ -64,12 +80,16 @@
 |/home|ユーザーごとのホームディレクトリ|-|
 |/etc|システムやアプリケーションの設定情報|-|
 |/etc/inittab|-|-|
+|/etc/udev/rules.d|デバイスファイル作成時に使う設定ファイル（.rules）が配置。|-|
+|/etc/modprobe.d/\*.conf|modprobeの設定ファイル（*.conf）が配置。|-|
+|/etc/systemd/system/default.target|systemdでシステム起動時に最初に実行されるUnit|-|
+|/lib/systemd/system|systemdのターゲットが格納|-|
 |/bin|基本的なコマンドが配置 |-|
 |/sbin|システム管理に必須のコマンドが配置|-|
 |/proc|プロセス、ハードウェアおよびシステムリソースなどの情報を扱うための仮想的なファイルシステム|-|
 |/proc/bus/pci/devices|PCIデバイス|cat/lspci|
 |/proc/bus/usb/devices|接続されたUSBデバイスの情報|cat/lsusb|
-|/proc/cmdline|ブートローダからカーネルに渡されたパラメータ||
+|/proc/cmdline|ブートローダからカーネルに渡されたパラメータが確認できるファイル||
 |/proc/cpuinfo|CPUに関する情報|cat/lscpu|
 |/proc/dma|使用中のDMAチャネルに関する情報|-|
 |/proc/interrups|IRQ(Interrupt ReQuest)（マウスやキーボードなどの周辺機器(デバイス)からCPUへの割り込み要求）|-|
@@ -79,8 +99,6 @@
 |/proc/scsi/scsi|SCSIデバイス|-|
 |/sys|デバイスが接続されるとデバイス情報が作成される|-|
 |/dev|ハードウェアのアクセスを抽象化したファイルであるデバイスファイルを格納。/sysの更新をudevが察知し、デバイスファイルが作成される。|-|
-|/etc/udev/rules.d|デバイスファイル作成時に使う設定ファイル（.rules）が配置。|-|
-|/etc/modprobe.d/\*.conf|modprobeの設定ファイル（*.conf）が配置。|-|
 |/var/log/messages|Linuxでメインで使用されるログファイル|
 |/var/log/secure|セキュリティに関するログ|
 |/var/log/maillog|メールに関するログ|
@@ -153,10 +171,9 @@
 |||SysVinit|Upstart|systemd|
 |:---|:---|:---|:---|:---|
 |起動プロセス|名称|initプロセス|-|systemdプロセス|
-|^|場所|/sbin/init/|-|-|
-|^|設定ファイル|/etc/inittab|-|-|
-|起動方法||順次起動|並列起動|並列起動|
-|実行順序|最初に実行|-|-|/etc/systemd/system/default.target|
+|^|起動方法|順次起動|並列起動|並列起動|
+|^|最初に実行|/sbin/init/|-|/etc/systemd/system/default.target|
+|^|設定ファイル|/etc/inittab<br>※デフォルトのランレベルや、ランレベルに応じた動作の設定|-|-|
 |プロセス管理||PID|-|cgroups<br>（カーネルの機能）|
 |起動プロセスの番号||1|-|-|
 |管理単位|名称|-|job|Unit<br>※設定ファイル|
@@ -164,14 +181,18 @@
 |サービスの管理コマンド||-|initctl|systemctl サブコマンド unit名|
 |ログの管理|名称|-|-|systemd-journald|
 |^|表示コマンド|-|-|journalctl<br>※cat不可|
-|ランレベル|種類|【Red Hat/CentOS】<br>0 停止<br>1,S,s シングルユーザー <br>2,3,5 マルチユーザー<br>4 未使用<br>6 再起動<br>【Ubuntu】<br>0 停止<br>1,S,s シングルユーザー<br>2~5 マルチユーザー<br>6 再起動<br>|-|0 poweroff.target<br>1 rescue.target|
+|サービス|名称|ランレベル|-|ターゲット|
+|^|種類|【Red Hat/CentOS】<br>0 停止<br>1,S,s シングルユーザー <br>2,3,5 マルチユーザー<br>4 未使用<br>6 再起動<br>【Ubuntu】<br>0 停止<br>1,S,s シングルユーザー<br>2~5 マルチユーザー<br>6 再起動<br>|-|0 poweroff.target / runlevel0.target<br>1 rescue.target / runlevel1.target<br>3 multi-user.target / runlevel3.target<br>5 graphical.target / runlevel5.target|
+|^|場所|/etc/rc[0-6].d|-|/lib/systemd/system/[ターゲット名].target<br>※シンボリックリンク|
 |^|確認|runrevel|-|-|
-|^|変更|init <br>telinit|-|-|
+|^|変更|init <br>telinit|||
 
 
-/etc/init.d<br>各種サービスの起動に使うスクリプトが入っているディレクトリ
-/etc/rc<ランレベル>.d<br>各ランレベルで起動・終了するサービスのスクリプト
-
+- /etc/init.d<br>各種サービスの起動に使うスクリプトが入っているディレクトリ
+- /etc/rc[0-6].d/[ファイル名]の命名規則<br>
+    - 1文字目：S（Start: サービスを起動）、K（Kill: サービスを停止）
+    - 数字：実行優先順位。若番のものが先に実行される
+    - サービス名：任意の名前をつける
 
 # Linuxシステムが起動するまでの流れ
 
