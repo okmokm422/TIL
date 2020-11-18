@@ -9,7 +9,7 @@
 |UEFI(Unified Extensible Firmware Interface)|・IntelがBIOS（Basic I/O System）を置き換えるために考案したEFIの統一仕様<br>・GUIでの操作をサポート<br>・ESP（EFIシステムパーティション）（UEFIシステムにおいて、物理的なマシンを起動し、ファームウエアが読み込まれた後、その後の起動シーケンスで最初にアクセスされる領域）は/boot/efiにマウントされる<br>・GPT（GUID Partition Table）というパーティション形式のHDDからの起動に対応しており、3TB以上のHDDからの起動をサポートしている。<br>|
 |カーネルモジュール|カーネルで組み込まれる機能のプログラム部品。カーネルから独立している。|
 |I/Oポートアドレス|周辺機器(デバイス)とCPUがデータをやり取りする際に使用する16ビットのアドレス|
-|SCSIデバイス（スカジー）|コンピュータと周辺機器を接続するためのインターフェイス|
+|SCSIデバイス（スカジー）|コンピュータと周辺機器を接続するためのインターフェイス<br>バス幅が16bitのSCSIに接続できる周辺機器の数は15個|
 |D-Bus（Desktop Bus）|プログラム同士が情報を伝達するプロセス間通信機構|
 |TA(ターミナルアダプタ)|データをISDN回線の中を通れる形に変換する機器|
 |ホットプラグデバイス|電源を入れたままの接続・取り外しに対応。プラグアンドプレイデバイスともいう。|
@@ -90,13 +90,13 @@
 |/proc/bus/pci/devices|PCIデバイス|cat/lspci|
 |/proc/bus/usb/devices|接続されたUSBデバイスの情報|cat/lsusb|
 |/proc/cmdline|ブートローダからカーネルに渡されたパラメータが確認できるファイル||
-|/proc/cpuinfo|CPUに関する情報|cat/lscpu|
-|/proc/dma|使用中のDMAチャネルに関する情報|-|
+|/proc/cpuinfo|CPUに関する情報が格納されたファイル|cat/lscpu|
+|/proc/dma|使用中のDMAチャネルに関する情報が格納されたファイル|-|
 |/proc/interrups|IRQ(Interrupt ReQuest)（マウスやキーボードなどの周辺機器(デバイス)からCPUへの割り込み要求）|-|
-|/proc/ioports|I/Oポートアドレス|-|
-|/proc/memoinfo|メモリ|-|
+|/proc/ioports|I/Oポートアドレスの情報が格納されているファイル|-|
+|/proc/meminfo|メモリの使用状況が格納されたファイル|-|
 |/proc/modules|ロードされているカーネルモジュール|-|
-|/proc/scsi/scsi|SCSIデバイス|-|
+|/proc/scsi/scsi|SCSIデバイスに関する情報が格納されたファイル|-|
 |/sys|デバイスが接続されるとデバイス情報が作成される|-|
 |/dev|ハードウェアのアクセスを抽象化したファイルであるデバイスファイルを格納。/sysの更新をudevが察知し、デバイスファイルが作成される。|-|
 |/var/log/messages|Linuxでメインで使用されるログファイル|
@@ -157,11 +157,11 @@
 - udev  
     ホットプラグデバイスの制御を行う。
 
-|path|内容|
-|:---|:---|
-|/sys|デバイスが接続されるとデバイス情報が作成される|
-|/dev|ハードウェアのアクセスを抽象化したファイルであるデバイスファイルを格納。/sysの更新をudevが察知し、デバイスファイルが作成される。|
-|/etc/udev/rules.d|デバイスファイル作成時に使う設定ファイル（.rules）が配置。|
+|順番|path|内容|
+|:---|:---|:---|
+|1|/sys|デバイスが接続されるとデバイス情報が作成・更新される|
+|2|/dev|ハードウェアのアクセスを抽象化したファイルであるデバイスファイルを格納。/sysの更新をudevが察知し、デバイスファイルが作成される。|
+|3|/etc/udev/rules.d|デバイスファイル作成時に使う設定ファイル（.rules）が配置。|
 
 <br>
 <br>
@@ -176,13 +176,13 @@
 |^|設定ファイル|/etc/inittab<br>※デフォルトのランレベルや、ランレベルに応じた動作の設定|-|-|
 |プロセス管理||PID|-|cgroups<br>（カーネルの機能）|
 |起動プロセスの番号||1|-|-|
-|管理単位|名称|-|job|Unit<br>※設定ファイル|
+|処理単位|名称|-|job|Unit<br>※設定ファイル|
 |^|種類|-|-|service　サービスを起動<br>device　デバイスを表す<br>mount　ファイルシステムをマウントする<br>swap　スワップ領域を有効にする<br>target　複数のUnitをグループ化する<br>timer　指定した日時や間隔で処理を実行する|
 |サービスの管理コマンド||-|initctl|systemctl サブコマンド unit名|
 |ログの管理|名称|-|-|systemd-journald|
 |^|表示コマンド|-|-|journalctl<br>※cat不可|
 |サービス|名称|ランレベル|-|ターゲット|
-|^|種類|【Red Hat/CentOS】<br>0 停止<br>1,S,s シングルユーザー <br>2,3,5 マルチユーザー<br>4 未使用<br>6 再起動<br>【Ubuntu】<br>0 停止<br>1,S,s シングルユーザー<br>2~5 マルチユーザー<br>6 再起動<br>|-|0 poweroff.target / runlevel0.target<br>1 rescue.target / runlevel1.target<br>3 multi-user.target / runlevel3.target<br>5 graphical.target / runlevel5.target|
+|^|種類|【Red Hat/CentOS】<br>0 停止<br>1,S,s シングルユーザー <br>2,3 マルチユーザー(CUI)<br>5 マルチユーザー(GUI)<br>4 未使用<br>6 再起動<br>【Ubuntu】<br>0 停止<br>1,S,s シングルユーザー<br>2~5 マルチユーザー<br>6 再起動<br>|-|0 poweroff.target / runlevel0.target<br>1 rescue.target / runlevel1.target<br>3 multi-user.target / runlevel3.target<br>5 graphical.target / runlevel5.target|
 |^|場所|/etc/rc[0-6].d|-|/lib/systemd/system/[ターゲット名].target<br>※シンボリックリンク|
 |^|確認|runrevel|-|-|
 |^|変更|init <br>telinit|||
@@ -200,9 +200,9 @@
 2. BIOS/UEFIがハードウェアのチェック・初期化を行う
 3. 起動デバイスに書き込まれたブートローダを読み出す
 4. ブートローダに制御を移す
-5. ブートローダが起動デバイス上からカーネルと初期RAMディスクをメモリ上へ読み込む
+5. ブートローダが起動デバイス上からカーネルと初期RAMディスクをメモリ上へ読み込む（/bootへ）
 6. カーネルがメモリの初期化やシステムクロックの設定等を行う
-7. カーネルが仮のルートファイルシステム（initramfs：初期RAMディスク）をマウントする
+7. カーネルが仮のルートファイルシステムをマウントする
 8. カーネルが最初のプロセスであるinit/systemdプロセスを実行する
 
 # UEFI/BIOS
@@ -216,3 +216,4 @@
 
 
 # 
+
