@@ -87,8 +87,8 @@
 |/bin|基本的なコマンドが配置 |-|
 |/sbin|システム管理に必須のコマンドが配置|-|
 |/proc|プロセス、ハードウェアおよびシステムリソースなどの情報を扱うための仮想的なファイルシステム|-|
-|/proc/bus/pci/devices|PCIデバイス|cat/lspci|
-|/proc/bus/usb/devices|接続されたUSBデバイスの情報|cat/lsusb|
+|/proc/bus/pci/devices|PCIデバイスの情報が格納されているファイル|cat/lspci|
+|/proc/bus/usb/devices|接続されたUSBデバイスの情報が格納されているファイル|cat/lsusb|
 |/proc/cmdline|ブートローダからカーネルに渡されたパラメータが確認できるファイル||
 |/proc/cpuinfo|CPUに関する情報が格納されたファイル|cat/lscpu|
 |/proc/dma|使用中のDMAチャネルに関する情報が格納されたファイル|-|
@@ -161,7 +161,7 @@
 |:---|:---|:---|
 |1|/sys|デバイスが接続されるとデバイス情報が作成・更新される|
 |2|/dev|ハードウェアのアクセスを抽象化したファイルであるデバイスファイルを格納。/sysの更新をudevが察知し、デバイスファイルが作成される。|
-|3|/etc/udev/rules.d|デバイスファイル作成時に使う設定ファイル（.rules）が配置。|
+|※|/etc/udev/rules.d|デバイスファイル作成時に使う設定ファイル（.rules）が配置。|
 
 <br>
 <br>
