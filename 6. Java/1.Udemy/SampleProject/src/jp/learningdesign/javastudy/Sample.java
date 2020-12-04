@@ -13,7 +13,7 @@ public class Sample {
 
 	public static void main(String[] args) {
 		// 次の行で、コンソールに文字列を出力します。
-		System.out.println("こんにちは Eclips!");
+		System.out.println("Hello Eclips! \nIt's Tuesday today. 今日は火曜日です。");
 
 	}
 
