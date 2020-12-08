@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Users/oka/Desktop/TIL/1. Python/5. Automate-the-Boring-Stuff/Chapter10/getTraceback.py", line 4, in <module>
+    raise Exception('これはエラーメッセージです。')
+Exception: これはエラーメッセージです。

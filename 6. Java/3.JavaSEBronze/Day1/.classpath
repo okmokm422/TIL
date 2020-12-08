@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="ex1"/>
+	<classpathentry kind="src" path="ex9"/>
+	<classpathentry kind="src" path="ex11"/>
+	<classpathentry kind="src" path="ex12"/>
+	<classpathentry kind="src" path="ex14"/>
+	<classpathentry kind="src" path="ex15"/>
+	<classpathentry kind="src" path="ex16"/>
+	<classpathentry kind="src" path="ex17"/>
+	<classpathentry kind="src" path="ex18"/>
+	<classpathentry kind="src" path="ex19"/>
+	<classpathentry kind="src" path="ex20"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
