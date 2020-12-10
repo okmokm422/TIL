@@ -7,6 +7,7 @@ org.eclipse.jdt.core.compiler.compliance=11
 org.eclipse.jdt.core.compiler.problem.assertIdentifier=error
 org.eclipse.jdt.core.compiler.problem.enumIdentifier=error
 org.eclipse.jdt.core.compiler.problem.missingSerialVersion=ignore
+org.eclipse.jdt.core.compiler.release=disabled
 org.eclipse.jdt.core.compiler.source=11
 org.eclipse.jdt.core.formatter.alignment_for_annotations_on_enum_constant=0
 org.eclipse.jdt.core.formatter.alignment_for_assertion_message=0

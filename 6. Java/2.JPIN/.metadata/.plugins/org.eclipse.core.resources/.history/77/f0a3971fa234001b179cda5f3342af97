@@ -1,7 +1,0 @@
-public class Name {
-	public static void main(String[] args){
-		System.out.println("Megumi Oka");
-		System.out.println("hoge");
-		System.out.println("test");
-	}
-}
