@@ -1,3 +1,0 @@
-INDEX VERSION 1.131+/Users/oka/Desktop/TIL/6. Java/3.JavaSEBronze/.metadata/.plugins/org.eclipse.jdt.core
-1278750107.index
-2012472112.index
