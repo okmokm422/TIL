@@ -36,39 +36,59 @@ public class Sample {
 		// 4.Orderクラス, Itemクラス, ShoppingCartクラスを使ってメインメソッドを実装
 
 		// Itemクラス
-		Item apple = new Item();
-		apple.setName("apple");
-		apple.setPrice(100);
 
-		Item banana = new Item();
-		banana.setName("banana");
-		banana.setPrice(80);
+		// コンストラクタで生成
+		Item apple = new Item("apple", 100);
+		Item banana = new Item("banana", 80);
+		Item orange = new Item("Orange", 120);
 
-		Item orange = new Item();
-		orange.setName("orange");
-		orange.setPrice(120);
+		// 以下、インスタンス生成→setの繰り返し（コンストラクタで書ける）
+		//		Item apple = new Item();
+		//		apple.setName("apple");
+		//		apple.setPrice(100);
+		//
+		//		Item banana = new Item();
+		//		banana.setName("banana");
+		//		banana.setPrice(80);
+		//
+		//		Item orange = new Item();
+		//		orange.setName("orange");
+		//		orange.setPrice(120);
 
 		// Orderクラス
-		Order o1 = new Order();
-		o1.setItem(apple);
-		o1.setQty(3);
 
-		Order o2 = new Order();
-		o2.setItem(banana);
-		o2.setQty(5);
+		// コンストラクタで生成
 
-		Order o3 = new Order();
-		o3.setItem(orange);
-		o3.setQty(2);
+		Order o1 = new Order(apple, 3);
+		Order o2 = new Order(banana, 5);
+		Order o3 = new Order(orange, 2);
+
+		// 以下、インスタンス生成→setの繰り返し（コンストラクタで書ける）
+		//		Order o1 = new Order();
+		//		o1.setItem(apple);
+		//		o1.setQty(3);
+		//
+		//		Order o2 = new Order();
+		//		o2.setItem(banana);
+		//		o2.setQty(5);
+		//
+		//		Order o3 = new Order();
+		//		o3.setItem(orange);
+		//		o3.setQty(2);
 
 		// ShoppingCartクラス
 		ShoppingCart cart = new ShoppingCart();
+		// cart.add(new Order(name, qty));を3行書くとソースコードがもっと短くなる
 		cart.add(o1);
 		cart.add(o2);
 		cart.add(o3);
 
 		int total = cart.getTotal();
 		System.out.println(total);
+
+		// Aクラスのコンストラクタメソッド呼び出し(引数あり)
+		B b = new B();
+
 	}
 
 }
