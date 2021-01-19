@@ -86,9 +86,19 @@ public class Sample {
 		int total = cart.getTotal();
 		System.out.println(total);
 
-		// Aクラスのコンストラクタメソッド呼び出し(引数あり)
+		// Aクラスのコンストラクタメソッド呼び出し(引数なし、ありでオーバーロードできる)
 		B b = new B();
+		B b2 = new B("shiga");
 
+		// Listクラス（オーバーロード）
+		List list = new List();
+		list.add("A");
+		list.add("B");
+		list.add("C");
+
+		for (int i = 0; i < list.size(); i++) {
+			System.out.println(list.get(i));
+		}
 	}
 
 }
