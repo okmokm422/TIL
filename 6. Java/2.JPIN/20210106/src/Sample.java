@@ -99,6 +99,17 @@ public class Sample {
 		for (int i = 0; i < list.size(); i++) {
 			System.out.println(list.get(i));
 		}
+
+		// メソッドを呼び出す
+		Hoge hoge = new Hoge();
+		hoge.hello1();
+
+		// スタティックメソッドを呼び出す
+		Hoge.hello2();
+
+		// スタティックフィールド
+		Hoge.num = 10;
+		System.out.println(Hoge.num);
 	}
 
 }
