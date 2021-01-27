@@ -6,7 +6,7 @@ public class Sample {
 		// インスタンスを作らなくても使える
 		A.num = 10;
 		System.out.println(A.num);
-		// staticメソッド
+		// statißcメソッド
 		A.hello();
 		// インスタンスを新しく作る
 		A a = new A();
@@ -15,6 +15,8 @@ public class Sample {
 		// スタティックでもクラス.メンバー名でコンパイルエラーにならない
 		a.num = 100;
 		a.hello();
+
+		int num = Integer.parseInt("100");
 	}
 
 }
