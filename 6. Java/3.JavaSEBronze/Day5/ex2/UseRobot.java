@@ -2,9 +2,8 @@
 public class UseRobot {
 
 	public static void main(String[] args) {
-		// Robotクラスをインスタンス化
-		// new クラス名();でインスタンス作成
-		Robot robot = new Robot();
+		// TODO 自動生成されたメソッド・スタブ
+		Robot robot = new Robot(); // Robotクラスからコピーしてインスタンス化
 		robot.name = "Java Robot";
 		robot.sayHello();
 	}

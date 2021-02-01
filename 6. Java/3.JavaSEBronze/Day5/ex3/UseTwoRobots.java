@@ -1,7 +1,7 @@
-
 public class UseTwoRobots {
 
 	public static void main(String[] args) {
+		// TODO 自動生成されたメソッド・スタブ
 		Robot a = new Robot();
 		a.name = "A";
 
@@ -10,7 +10,6 @@ public class UseTwoRobots {
 
 		a.sayHello();
 		b.sayHello();
-
 	}
 
 }

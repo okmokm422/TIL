@@ -1,9 +1,9 @@
 
 public class Robot {
-	String name; // nameフィールドを宣言
+	String name;
 
-	public void sayHello() { // sayHelloメソッドを定義　クラスのメソッドにはstaticはつかない
+	// クラスに定義するメソッドにはstaticをつけない
+	public void sayHello() {
 		System.out.println("Hi, I'm " + name);
 	}
-
 }
