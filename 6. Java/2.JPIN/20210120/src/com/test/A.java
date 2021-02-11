@@ -2,5 +2,7 @@
 package com.test;
 
 public class A {
-
+	public void test() {
+		System.out.println("com.test.A.test()");
+	}
 }

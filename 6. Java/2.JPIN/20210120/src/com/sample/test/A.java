@@ -3,5 +3,7 @@
 package com.sample.test;
 
 public class A {
-
+	public static void test() {
+		System.out.println("com.sample.test.A.test()");
+	}
 }
