@@ -6,7 +6,8 @@ package com.sample;
 // 継承したときにオーバーライドしたいものは確実にされるように
 // 型情報だけで中身は実装したくないもの　→　return nullなど無理やり書かないといけない
 
-public class D implements A {
+class D implements A {
+	@Override
 	public void hello() {
 		System.out.println("D");
 	}
